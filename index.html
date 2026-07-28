@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Semesterplanering</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Auth -->
+  <div id="auth-container" class="auth-wrapper">
+    <div class="auth-box">
+      <div class="auth-header">
+        <h2>Semesterplanering</h2>
+        <p>Planera personalens semester enkelt</p>
+      </div>
+      <div class="auth-tabs">
+        <button id="login-tab" class="active">Logga in</button>
+        <button id="signup-tab">Skapa konto</button>
+      </div>
+      <form id="login-form" class="auth-form">
+        <div class="form-group">
+          <label for="login-email">E-post</label>
+          <input type="email" id="login-email" required placeholder="din@email.se">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Lösenord</label>
+          <input type="password" id="login-password" required placeholder="Ditt lösenord" minlength="6">
+        </div>
+        <button type="submit">Logga in</button>
+        <div id="auth-error" class="auth-error"></div>
+      </form>
+      <form id="signup-form" class="auth-form hidden">
+        <div class="form-group">
+          <label for="signup-email">E-post</label>
+          <input type="email" id="signup-email" required placeholder="din@email.se">
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Lösenord</label>
+          <input type="password" id="signup-password" required placeholder="Minst 6 tecken" minlength="6">
+        </div>
+        <button type="submit">Skapa konto</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div id="app-container" class="hidden">
+    <header class="app-header">
+      <h1>Semesterplanering</h1>
+      <div class="header-right">
+        <span id="user-email"></span>
+        <button id="logout-btn">Logga ut</button>
+      </div>
+    </header>
+
+    <main class="app-content">
+      <div class="controls-row">
+        <!-- Period -->
+        <div class="card period-card">
+          <div class="card-header">Semesterperiod</div>
+          <div class="card-body">
+            <div class="period-controls">
+              <select id="year-select"></select>
+              <span class="separator">från</span>
+              <select id="start-week"></select>
+              <span class="separator">till</span>
+              <select id="end-week"></select>
+              <button id="save-period-btn" class="btn-primary">Spara</button>
+            </div>
+            <div id="period-status" class="period-status"></div>
+          </div>
+        </div>
+
+        <!-- Employees -->
+        <div class="card employees-card">
+          <div class="card-header">Anställda</div>
+          <div class="card-body">
+            <div class="add-employee-row">
+              <input type="text" id="employee-name" placeholder="Namn på anställd">
+              <button id="add-employee-btn" class="btn-primary">Lägg till</button>
+            </div>
+            <ul id="employee-list" class="employee-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="card grid-card">
+        <div class="card-header">Semesterschema</div>
+        <div class="card-body">
+          <div class="grid-wrapper" id="vacation-grid"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
