@@ -199,6 +199,67 @@ body {
   margin-top: 12px;
 }
 
+.forgot-row {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.forgot-row a {
+  color: var(--secondary);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.forgot-row a:hover {
+  text-decoration: underline;
+}
+
+/* ========== ADMIN ========== */
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.admin-table th {
+  background: var(--bg);
+  font-weight: 600;
+  color: var(--primary);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--border);
+}
+
+.admin-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-table tr:hover td {
+  background: var(--bg);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-danger:hover {
+  background: #c0392b;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
 /* ========== MAIN LAYOUT ========== */
 
 .app-content {

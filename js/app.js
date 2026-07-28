@@ -39,7 +39,7 @@ function populateWeekSelects() {
 }
 
 async function loadVacationPeriod() {
-  const { data } = await supabase
+  const { data } = await db
     .from('vacation_periods')
     .select('*')
     .eq('year', currentYear)
@@ -67,9 +67,9 @@ async function savePeriod() {
     return;
   }
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await db.auth.getSession();
 
-  const { error } = await supabase
+  const { error } = await db
     .from('vacation_periods')
     .upsert({
       user_id: session.user.id,
@@ -89,7 +89,7 @@ async function savePeriod() {
 }
 
 async function loadEmployees() {
-  const { data } = await supabase
+  const { data } = await db
     .from('employees')
     .select('*')
     .order('name');
@@ -102,9 +102,9 @@ async function addEmployee() {
   const name = employeeNameInput.value.trim();
   if (!name) return;
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await db.auth.getSession();
 
-  const { error } = await supabase
+  const { error } = await db
     .from('employees')
     .insert({ user_id: session.user.id, name });
 
@@ -120,7 +120,7 @@ async function addEmployee() {
 }
 
 async function deleteEmployee(id) {
-  const { error } = await supabase
+  const { error } = await db
     .from('employees')
     .delete()
     .eq('id', id);
@@ -156,7 +156,7 @@ async function loadAssignments() {
   }
 
   const employeeIds = employees.map(e => e.id);
-  const { data } = await supabase
+  const { data } = await db
     .from('vacation_assignments')
     .select('*')
     .in('employee_id', employeeIds)
@@ -173,13 +173,13 @@ async function toggleAssignment(employeeId, weekNumber) {
   const key = `${employeeId}_${weekNumber}`;
 
   if (assignments[key]) {
-    await supabase
+    await db
       .from('vacation_assignments')
       .delete()
       .eq('id', assignments[key]);
     delete assignments[key];
   } else {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('vacation_assignments')
       .insert({ employee_id: employeeId, year: currentYear, week_number: weekNumber })
       .select()
