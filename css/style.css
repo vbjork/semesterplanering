@@ -196,7 +196,7 @@ body {
   color: var(--danger);
   font-size: 13px;
   min-height: 20px;
-  margin-top: 12px;
+  padding: 0 24px 16px;
 }
 
 .forgot-row {
