@@ -213,7 +213,7 @@ async function loadAdminPanel() {
       <td>${created}</td>
       <td>${lastLogin}</td>
       <td>${count || 0}</td>
-      <td><button class="btn-danger btn-sm" data-id="${user.id}" data-email="${user.email}">Ta bort</button></td>
+      <td><button class="ds-btn ds-btn-danger ds-btn-sm" data-id="${user.id}" data-email="${user.email}">Ta bort</button></td>
     `;
     tbody.appendChild(row);
   }
@@ -221,7 +221,7 @@ async function loadAdminPanel() {
   table.appendChild(tbody);
   userList.appendChild(table);
 
-  userList.querySelectorAll('.btn-danger').forEach(btn => {
+  userList.querySelectorAll('.ds-btn-danger').forEach(btn => {
     btn.addEventListener('click', async () => {
       const email = btn.dataset.email;
       const id = btn.dataset.id;

@@ -21,12 +21,12 @@
       </div>
       <form id="login-form" class="auth-form">
         <div class="form-group">
-          <label for="login-email">E-post</label>
-          <input type="email" id="login-email" required placeholder="din@email.se">
+          <label class="ds-label" for="login-email">E-post</label>
+          <input class="ds-input" type="email" id="login-email" required placeholder="din@email.se">
         </div>
         <div class="form-group">
-          <label for="login-password">Lösenord</label>
-          <input type="password" id="login-password" required placeholder="Ditt lösenord" minlength="6">
+          <label class="ds-label" for="login-password">Lösenord</label>
+          <input class="ds-input" type="password" id="login-password" required placeholder="Ditt lösenord" minlength="6">
         </div>
         <button type="submit">Logga in</button>
         <div class="forgot-row">
@@ -35,19 +35,19 @@
       </form>
       <form id="signup-form" class="auth-form hidden">
         <div class="form-group">
-          <label for="signup-email">E-post</label>
-          <input type="email" id="signup-email" required placeholder="din@email.se">
+          <label class="ds-label" for="signup-email">E-post</label>
+          <input class="ds-input" type="email" id="signup-email" required placeholder="din@email.se">
         </div>
         <div class="form-group">
-          <label for="signup-password">Lösenord</label>
-          <input type="password" id="signup-password" required placeholder="Minst 6 tecken" minlength="6">
+          <label class="ds-label" for="signup-password">Lösenord</label>
+          <input class="ds-input" type="password" id="signup-password" required placeholder="Minst 6 tecken" minlength="6">
         </div>
         <button type="submit">Skapa konto</button>
       </form>
       <form id="reset-form" class="auth-form hidden">
         <div class="form-group">
-          <label for="reset-email">E-post</label>
-          <input type="email" id="reset-email" required placeholder="din@email.se">
+          <label class="ds-label" for="reset-email">E-post</label>
+          <input class="ds-input" type="email" id="reset-email" required placeholder="din@email.se">
         </div>
         <button type="submit">Skicka återställningslänk</button>
         <div class="forgot-row">
@@ -76,12 +76,12 @@
           <div class="card-header">Semesterperiod</div>
           <div class="card-body">
             <div class="period-controls">
-              <select id="year-select"></select>
+              <select id="year-select" class="ds-select"></select>
               <span class="separator">från</span>
-              <select id="start-week"></select>
+              <select id="start-week" class="ds-select"></select>
               <span class="separator">till</span>
-              <select id="end-week"></select>
-              <button id="save-period-btn" class="btn-primary">Spara</button>
+              <select id="end-week" class="ds-select"></select>
+              <button id="save-period-btn" class="ds-btn ds-btn-primary">Spara</button>
             </div>
             <div id="period-status" class="period-status"></div>
           </div>
@@ -92,8 +92,8 @@
           <div class="card-header">Anställda</div>
           <div class="card-body">
             <div class="add-employee-row">
-              <input type="text" id="employee-name" placeholder="Namn på anställd">
-              <button id="add-employee-btn" class="btn-primary">Lägg till</button>
+              <input class="ds-input" type="text" id="employee-name" placeholder="Namn på anställd">
+              <button id="add-employee-btn" class="ds-btn ds-btn-primary">Lägg till</button>
             </div>
             <ul id="employee-list" class="employee-list"></ul>
           </div>
