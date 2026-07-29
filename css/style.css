@@ -419,122 +419,144 @@ body {
 }
 
 .vacation-table {
-  width: 100%;
+  width: max-content;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
 }
 
-/* Header */
+/* Header — week group row */
 .vacation-table thead th {
   background: var(--color-primary-lighter);
   font-weight: 600;
   color: var(--color-primary);
-  padding: 10px 4px;
   text-align: center;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-bottom: 2px solid var(--color-primary-border);
   position: sticky;
   top: 0;
   z-index: 1;
 }
+.vacation-table thead tr:first-child th {
+  padding: 7px 2px 3px;
+  border-bottom: 1px solid var(--color-primary-border);
+}
+.vacation-table thead tr:last-child th {
+  padding: 2px 1px 5px;
+  border-bottom: 2px solid var(--color-primary-border);
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--color-text-faint);
+}
 .vacation-table thead th:first-child {
   border-radius: var(--radius-lg) 0 0 0;
 }
-.vacation-table thead th:last-child {
+.vacation-table thead tr:first-child th:last-child {
   border-radius: 0 var(--radius-lg) 0 0;
+}
+
+/* Week group header — border between weeks */
+.vacation-table .col-week-group {
+  border-left: 1px solid var(--color-primary-border);
+}
+.vacation-table .col-week-group:first-of-type {
+  border-left: none;
+}
+
+/* Day header columns */
+.vacation-table .col-day {
+  min-width: 26px;
+  width: 26px;
 }
 
 /* Name column — sticky left */
 .vacation-table .col-name {
   text-align: left;
-  padding-left: 16px;
-  min-width: 160px;
+  padding-left: 14px;
+  padding-right: 10px;
+  min-width: 140px;
   position: sticky;
   left: 0;
   z-index: 2;
   background: var(--color-bg-card);
-  border-right: 1px solid var(--color-border-light);
+  border-right: 1px solid var(--color-border);
 }
 .vacation-table thead .col-name {
   background: var(--color-primary-lighter);
   z-index: 3;
   text-transform: none;
-  font-size: 0.78rem;
-}
-
-/* Week columns */
-.vacation-table .col-week {
-  min-width: 44px;
-  width: 44px;
+  font-size: 0.72rem;
 }
 
 /* Total column */
 .vacation-table .col-total {
-  min-width: 60px;
+  min-width: 48px;
   text-align: center;
-  border-left: 1px solid var(--color-border-light);
+  border-left: 1px solid var(--color-border);
   font-weight: 700;
 }
 
 /* Body rows */
 .vacation-table tbody td {
-  padding: 4px 3px;
+  padding: 0;
   text-align: center;
   border-bottom: 1px solid var(--color-border-light);
   vertical-align: middle;
 }
 .vacation-table tbody td.col-name {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--color-text-dark);
-  padding: 8px 16px;
+  padding: 6px 14px;
 }
 
-/* Week cell — clickable area */
-.vacation-table .week-cell {
+/* Day cell — clickable */
+.vacation-table .day-cell {
   cursor: pointer;
-  padding: 4px 2px;
+  padding: 3px 1px;
+  height: 30px;
+  transition: background 0.1s;
+}
+.vacation-table .day-cell:hover {
+  background: var(--color-bg-hover);
 }
 
-/* The pill inside each cell */
-.week-pill {
-  display: block;
-  height: 28px;
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
-  transition: background 0.12s, transform 0.1s, box-shadow 0.12s;
-}
-.week-pill:hover {
-  transform: scale(1.1);
-  box-shadow: var(--shadow-md);
+/* Weekend cells — subtle tint */
+.vacation-table .day-cell.weekend {
+  background: rgba(0, 0, 0, 0.02);
 }
 
-/* Active vacation pill */
-.week-cell.active .week-pill {
+/* Active vacation day */
+.vacation-table .day-cell.active {
   background: #34d399;
-  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.3);
 }
-.week-cell.active .week-pill:hover {
+.vacation-table .day-cell.active:hover {
   background: #10b981;
+}
+.vacation-table .day-cell.active.weekend {
+  background: #2dd4a0;
+}
+
+/* Week separator lines in body */
+.vacation-table tbody td.day-cell:nth-of-type(7n+2) {
+  border-left: 1px solid var(--color-border-light);
 }
 
 /* Total value in employee row */
 .col-total.emp-total {
   color: var(--color-primary);
-  font-size: 0.92rem;
+  font-size: 0.85rem;
 }
 
 /* Summary row */
 .vacation-table .summary-row td {
   background: var(--color-bg-card);
   font-weight: 600;
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   color: var(--color-text-faint);
   border-top: 2px solid var(--color-border);
-  padding: 8px 3px;
+  padding: 6px 1px;
 }
 .vacation-table .summary-row .col-name {
   background: var(--color-bg-card);

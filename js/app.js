@@ -3,6 +3,8 @@ let employees = [];
 let vacationPeriod = null;
 let assignments = {};
 
+const DAY_NAMES = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
+
 const yearSelect = document.getElementById('year-select');
 const startWeekSelect = document.getElementById('start-week');
 const endWeekSelect = document.getElementById('end-week');
@@ -172,13 +174,13 @@ async function loadAssignments() {
 
   assignments = {};
   (data || []).forEach(a => {
-    const key = a.employee_id + '_' + a.week_number;
+    const key = a.employee_id + '_' + a.week_number + '_' + a.day_number;
     assignments[key] = a.id;
   });
 }
 
-async function toggleAssignment(employeeId, weekNumber) {
-  const key = employeeId + '_' + weekNumber;
+async function toggleAssignment(employeeId, weekNumber, dayNumber) {
+  const key = employeeId + '_' + weekNumber + '_' + dayNumber;
 
   if (assignments[key]) {
     await db
@@ -189,7 +191,12 @@ async function toggleAssignment(employeeId, weekNumber) {
   } else {
     const { data, error } = await db
       .from('vacation_assignments')
-      .insert({ employee_id: employeeId, year: currentYear, week_number: weekNumber })
+      .insert({
+        employee_id: employeeId,
+        year: currentYear,
+        week_number: weekNumber,
+        day_number: dayNumber
+      })
       .select()
       .single();
 
@@ -217,28 +224,44 @@ function renderGrid() {
   const table = document.createElement('table');
   table.className = 'vacation-table';
 
-  // Header
+  // Header row 1: week numbers
   const thead = document.createElement('thead');
-  const headerRow = document.createElement('tr');
+  const weekRow = document.createElement('tr');
 
   const nameHeader = document.createElement('th');
   nameHeader.className = 'col-name';
   nameHeader.textContent = 'Anställd';
-  headerRow.appendChild(nameHeader);
+  nameHeader.rowSpan = 2;
+  weekRow.appendChild(nameHeader);
 
   weeks.forEach(w => {
     const th = document.createElement('th');
-    th.className = 'col-week';
+    th.className = 'col-week-group';
+    th.colSpan = 7;
     th.textContent = 'V' + w;
-    headerRow.appendChild(th);
+    weekRow.appendChild(th);
   });
 
   const totalHeader = document.createElement('th');
   totalHeader.className = 'col-total';
-  totalHeader.textContent = 'Veckor';
-  headerRow.appendChild(totalHeader);
+  totalHeader.textContent = 'Dagar';
+  totalHeader.rowSpan = 2;
+  weekRow.appendChild(totalHeader);
 
-  thead.appendChild(headerRow);
+  thead.appendChild(weekRow);
+
+  // Header row 2: day names
+  const dayRow = document.createElement('tr');
+  weeks.forEach(() => {
+    DAY_NAMES.forEach(d => {
+      const th = document.createElement('th');
+      th.className = 'col-day';
+      th.textContent = d;
+      dayRow.appendChild(th);
+    });
+  });
+  thead.appendChild(dayRow);
+
   table.appendChild(thead);
 
   // Body
@@ -252,29 +275,29 @@ function renderGrid() {
     nameCell.textContent = emp.name;
     row.appendChild(nameCell);
 
-    let totalWeeks = 0;
+    let totalDays = 0;
 
     weeks.forEach(w => {
-      const td = document.createElement('td');
-      td.className = 'week-cell';
+      for (let d = 1; d <= 7; d++) {
+        const td = document.createElement('td');
+        td.className = 'day-cell';
 
-      const pill = document.createElement('div');
-      pill.className = 'week-pill';
-      td.appendChild(pill);
+        if (d === 6 || d === 7) td.classList.add('weekend');
 
-      const key = emp.id + '_' + w;
-      if (assignments[key]) {
-        td.classList.add('active');
-        totalWeeks++;
+        const key = emp.id + '_' + w + '_' + d;
+        if (assignments[key]) {
+          td.classList.add('active');
+          totalDays++;
+        }
+
+        td.addEventListener('click', () => toggleAssignment(emp.id, w, d));
+        row.appendChild(td);
       }
-
-      td.addEventListener('click', () => toggleAssignment(emp.id, w));
-      row.appendChild(td);
     });
 
     const totalCell = document.createElement('td');
     totalCell.className = 'col-total emp-total';
-    totalCell.textContent = totalWeeks;
+    totalCell.textContent = totalDays;
     row.appendChild(totalCell);
 
     tbody.appendChild(row);
@@ -290,14 +313,16 @@ function renderGrid() {
   summaryRow.appendChild(summaryLabel);
 
   weeks.forEach(w => {
-    const td = document.createElement('td');
-    let count = 0;
-    employees.forEach(emp => {
-      if (assignments[emp.id + '_' + w]) count++;
-    });
-    td.textContent = count || '';
-    if (count > 0) td.classList.add('has-count');
-    summaryRow.appendChild(td);
+    for (let d = 1; d <= 7; d++) {
+      const td = document.createElement('td');
+      let count = 0;
+      employees.forEach(emp => {
+        if (assignments[emp.id + '_' + w + '_' + d]) count++;
+      });
+      td.textContent = count || '';
+      if (count > 0) td.classList.add('has-count');
+      summaryRow.appendChild(td);
+    }
   });
 
   const emptyTotal = document.createElement('td');
