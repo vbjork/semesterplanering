@@ -2,6 +2,7 @@ let currentYear = new Date().getFullYear();
 let employees = [];
 let vacationPeriod = null;
 let assignments = {};
+let appLoaded = false;
 
 const DAY_NAMES = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
 
@@ -16,6 +17,7 @@ const vacationGrid = document.getElementById('vacation-grid');
 const periodStatus = document.getElementById('period-status');
 
 function populateYearSelect() {
+  yearSelect.innerHTML = '';
   const thisYear = new Date().getFullYear();
   for (let y = thisYear - 1; y <= thisYear + 2; y++) {
     const opt = document.createElement('option');
@@ -349,6 +351,8 @@ yearSelect.addEventListener('change', async () => {
 });
 
 async function loadApp() {
+  if (appLoaded) return;
+  appLoaded = true;
   populateYearSelect();
   populateWeekSelects();
   await loadVacationPeriod();

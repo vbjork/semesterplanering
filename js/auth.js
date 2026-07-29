@@ -34,6 +34,7 @@ function showAuth() {
   authContainer.classList.remove('hidden');
   appContainer.classList.add('hidden');
   adminContainer.classList.add('hidden');
+  appLoaded = false;
 }
 
 function showApp(session) {
