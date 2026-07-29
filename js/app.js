@@ -249,6 +249,9 @@ function renderGrid() {
     weeks.forEach(w => {
       const cell = document.createElement('td');
       cell.className = 'week-cell';
+      const inner = document.createElement('div');
+      inner.className = 'week-cell-inner';
+      cell.appendChild(inner);
       const key = `${emp.id}_${w}`;
       const isVacation = !!assignments[key];
 
