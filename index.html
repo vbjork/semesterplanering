@@ -43,51 +43,73 @@
 
   <div id="app-container" class="hidden">
     <header class="topbar">
-      <span class="topbar-title">Semesterplanering</span>
+      <div class="topbar-left">
+        <span class="topbar-title">Semesterplanering</span>
+        <div id="group-tabs" class="group-tabs"></div>
+      </div>
       <div class="topbar-right">
+        <span id="period-badge" class="period-badge"></span>
+        <button id="settings-btn" class="topbar-btn">Inställningar</button>
+        <button id="admin-btn" class="topbar-btn hidden">Admin</button>
         <span id="user-email" class="topbar-email"></span>
-        <button id="admin-btn" class="ds-btn hidden">Admin</button>
-        <button id="logout-btn" class="ds-btn">Logga ut</button>
+        <button id="logout-btn" class="topbar-btn">Logga ut</button>
       </div>
     </header>
 
-    <main class="ds-page">
-      <div class="controls-row">
-        <div class="ds-card">
-          <div class="ds-card-label">Semesterperiod</div>
-          <div class="period-controls">
-            <select id="year-select" class="ds-select"></select>
-            <span class="sep">från</span>
-            <select id="start-week" class="ds-select"></select>
-            <span class="sep">till</span>
-            <select id="end-week" class="ds-select"></select>
-            <button id="save-period-btn" class="ds-btn ds-btn-primary">Spara</button>
-          </div>
-          <div id="period-status" class="period-status"></div>
-        </div>
-        <div class="ds-card employees-card">
-          <div class="ds-card-label">Anställda</div>
-          <div class="add-row">
-            <input class="ds-input" type="text" id="employee-name" placeholder="Namn på anställd">
-            <button id="add-employee-btn" class="ds-btn ds-btn-primary">Lägg till</button>
-          </div>
-          <ul id="employee-list" class="emp-list"></ul>
-        </div>
-      </div>
+    <div class="app-body">
+      <div class="grid-fullscreen" id="vacation-grid"></div>
+    </div>
 
-      <div class="ds-card">
-        <div class="ds-card-label">Semesterschema</div>
-        <div class="grid-scroll" id="vacation-grid"></div>
+    <div id="settings-overlay" class="overlay hidden">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Inställningar</span>
+          <button id="close-settings" class="panel-close">&times;</button>
+        </div>
+        <div class="panel-body">
+          <div class="panel-section">
+            <div class="panel-section-label">Semesterperiod</div>
+            <div class="period-controls">
+              <select id="year-select" class="ds-select"></select>
+              <span class="sep">V</span>
+              <select id="start-week" class="ds-select"></select>
+              <span class="sep">till V</span>
+              <select id="end-week" class="ds-select"></select>
+            </div>
+            <button id="save-period-btn" class="ds-btn ds-btn-primary" style="width:100%;margin-top:8px;">Spara period</button>
+            <div id="period-status" class="period-status"></div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-section-label">Grupper</div>
+            <div id="group-list" class="group-manage-list"></div>
+            <div class="add-row">
+              <input class="ds-input" type="text" id="group-name" placeholder="Ny grupp">
+              <button id="add-group-btn" class="ds-btn ds-btn-primary">+</button>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-section-label">Anställda <span id="current-group-name" class="panel-section-hint"></span></div>
+            <div class="add-row">
+              <input class="ds-input" type="text" id="employee-name" placeholder="Namn på anställd">
+              <button id="add-employee-btn" class="ds-btn ds-btn-primary">+</button>
+            </div>
+            <ul id="employee-list" class="emp-list"></ul>
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
   </div>
 
   <div id="admin-container" class="hidden">
     <header class="topbar">
-      <span class="topbar-title">Admin — Semesterplanering</span>
+      <div class="topbar-left">
+        <span class="topbar-title">Admin — Semesterplanering</span>
+      </div>
       <div class="topbar-right">
-        <button id="admin-back-btn" class="ds-btn">Tillbaka</button>
-        <button id="logout-btn-admin" class="ds-btn">Logga ut</button>
+        <button id="admin-back-btn" class="topbar-btn">Tillbaka</button>
+        <button id="logout-btn-admin" class="topbar-btn">Logga ut</button>
       </div>
     </header>
     <main class="ds-page">

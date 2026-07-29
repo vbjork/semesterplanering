@@ -2,6 +2,8 @@ let currentYear = new Date().getFullYear();
 let employees = [];
 let vacationPeriod = null;
 let assignments = {};
+let groups = [];
+let currentGroupId = null;
 let appLoaded = false;
 
 const DAY_NAMES = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
@@ -15,6 +17,28 @@ const addEmployeeBtn = document.getElementById('add-employee-btn');
 const employeeList = document.getElementById('employee-list');
 const vacationGrid = document.getElementById('vacation-grid');
 const periodStatus = document.getElementById('period-status');
+const settingsOverlay = document.getElementById('settings-overlay');
+const settingsBtn = document.getElementById('settings-btn');
+const closeSettings = document.getElementById('close-settings');
+const groupTabs = document.getElementById('group-tabs');
+const groupList = document.getElementById('group-list');
+const groupNameInput = document.getElementById('group-name');
+const addGroupBtn = document.getElementById('add-group-btn');
+const periodBadge = document.getElementById('period-badge');
+const currentGroupNameEl = document.getElementById('current-group-name');
+
+// Settings panel
+settingsBtn.addEventListener('click', () => {
+  settingsOverlay.classList.remove('hidden');
+});
+closeSettings.addEventListener('click', () => {
+  settingsOverlay.classList.add('hidden');
+});
+settingsOverlay.addEventListener('click', (e) => {
+  if (e.target === settingsOverlay) {
+    settingsOverlay.classList.add('hidden');
+  }
+});
 
 function populateYearSelect() {
   yearSelect.innerHTML = '';
@@ -34,7 +58,7 @@ function populateWeekSelects() {
     for (let w = 1; w <= 53; w++) {
       const opt = document.createElement('option');
       opt.value = w;
-      opt.textContent = 'V' + w;
+      opt.textContent = w;
       sel.appendChild(opt);
     }
   });
@@ -42,6 +66,128 @@ function populateWeekSelects() {
   endWeekSelect.value = 35;
 }
 
+// Groups
+async function loadGroups() {
+  const { data } = await db
+    .from('groups')
+    .select('*')
+    .order('created_at');
+
+  groups = data || [];
+
+  if (groups.length === 0) {
+    const { data: { session } } = await db.auth.getSession();
+    const { data: newGroup } = await db
+      .from('groups')
+      .insert({ user_id: session.user.id, name: 'Arbetslag 1' })
+      .select()
+      .single();
+
+    if (newGroup) {
+      groups = [newGroup];
+    }
+  }
+
+  if (!currentGroupId || !groups.find(g => g.id === currentGroupId)) {
+    currentGroupId = groups.length > 0 ? groups[0].id : null;
+  }
+
+  renderGroupTabs();
+  renderGroupList();
+  updateCurrentGroupName();
+}
+
+function renderGroupTabs() {
+  groupTabs.innerHTML = '';
+  groups.forEach(g => {
+    const btn = document.createElement('button');
+    btn.className = 'group-tab' + (g.id === currentGroupId ? ' active' : '');
+    btn.textContent = g.name;
+    btn.addEventListener('click', () => switchGroup(g.id));
+    groupTabs.appendChild(btn);
+  });
+}
+
+function renderGroupList() {
+  groupList.innerHTML = '';
+  groups.forEach(g => {
+    const item = document.createElement('div');
+    item.className = 'group-manage-item';
+
+    const name = document.createElement('span');
+    name.className = 'group-item-name';
+    name.textContent = g.name;
+    item.appendChild(name);
+
+    if (groups.length > 1) {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'delete-btn';
+      delBtn.innerHTML = '&times;';
+      delBtn.addEventListener('click', () => {
+        if (confirm('Ta bort grupp "' + g.name + '"? Alla anställda i gruppen raderas.')) {
+          deleteGroup(g.id);
+        }
+      });
+      item.appendChild(delBtn);
+    }
+
+    groupList.appendChild(item);
+  });
+}
+
+function updateCurrentGroupName() {
+  const g = groups.find(g => g.id === currentGroupId);
+  currentGroupNameEl.textContent = g ? '— ' + g.name : '';
+}
+
+async function addGroup() {
+  const name = groupNameInput.value.trim();
+  if (!name) return;
+
+  const { data: { session } } = await db.auth.getSession();
+  const { error } = await db
+    .from('groups')
+    .insert({ user_id: session.user.id, name });
+
+  if (error) {
+    alert('Kunde inte skapa grupp: ' + error.message);
+    return;
+  }
+
+  groupNameInput.value = '';
+  await loadGroups();
+}
+
+async function deleteGroup(id) {
+  const { error } = await db
+    .from('groups')
+    .delete()
+    .eq('id', id);
+
+  if (!error) {
+    if (currentGroupId === id) currentGroupId = null;
+    await loadGroups();
+    await loadEmployees();
+    await loadAssignments();
+    renderGrid();
+  }
+}
+
+async function switchGroup(id) {
+  currentGroupId = id;
+  renderGroupTabs();
+  updateCurrentGroupName();
+  await loadEmployees();
+  await loadAssignments();
+  renderGrid();
+}
+
+addGroupBtn.addEventListener('click', addGroup);
+groupNameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addGroup();
+});
+
+// Vacation period
 async function loadVacationPeriod() {
   const { data } = await db
     .from('vacation_periods')
@@ -53,11 +199,13 @@ async function loadVacationPeriod() {
   if (data) {
     startWeekSelect.value = data.start_week;
     endWeekSelect.value = data.end_week;
-    periodStatus.textContent = 'Semesterperiod: V' + data.start_week + '–V' + data.end_week;
+    periodStatus.textContent = 'Sparad: V' + data.start_week + '–V' + data.end_week;
     periodStatus.className = 'period-status saved';
+    periodBadge.textContent = 'V' + data.start_week + '–V' + data.end_week + ' ' + currentYear;
   } else {
-    periodStatus.textContent = 'Ingen period sparad för detta år';
+    periodStatus.textContent = 'Ingen period sparad';
     periodStatus.className = 'period-status';
+    periodBadge.textContent = '';
   }
 }
 
@@ -83,7 +231,7 @@ async function savePeriod() {
     }, { onConflict: 'user_id,year' });
 
   if (error) {
-    periodStatus.textContent = 'Fel vid sparande: ' + error.message;
+    periodStatus.textContent = 'Fel: ' + error.message;
     periodStatus.className = 'period-status error';
     return;
   }
@@ -92,10 +240,18 @@ async function savePeriod() {
   renderGrid();
 }
 
+// Employees
 async function loadEmployees() {
+  if (!currentGroupId) {
+    employees = [];
+    renderEmployeeList();
+    return;
+  }
+
   const { data } = await db
     .from('employees')
     .select('*')
+    .eq('group_id', currentGroupId)
     .order('name');
 
   employees = data || [];
@@ -104,13 +260,13 @@ async function loadEmployees() {
 
 async function addEmployee() {
   const name = employeeNameInput.value.trim();
-  if (!name) return;
+  if (!name || !currentGroupId) return;
 
   const { data: { session } } = await db.auth.getSession();
 
   const { error } = await db
     .from('employees')
-    .insert({ user_id: session.user.id, name });
+    .insert({ user_id: session.user.id, name, group_id: currentGroupId });
 
   if (error) {
     alert('Kunde inte lägga till: ' + error.message);
@@ -161,6 +317,7 @@ function renderEmployeeList() {
   });
 }
 
+// Assignments
 async function loadAssignments() {
   if (employees.length === 0) {
     assignments = {};
@@ -210,11 +367,17 @@ async function toggleAssignment(employeeId, weekNumber, dayNumber) {
   renderGrid();
 }
 
+// Grid
 function renderGrid() {
   vacationGrid.innerHTML = '';
 
   if (!vacationPeriod || employees.length === 0) {
-    vacationGrid.innerHTML = '<p class="grid-empty">Lägg till anställda och spara en semesterperiod för att se schemat.</p>';
+    const msg = !currentGroupId
+      ? 'Öppna Inställningar för att skapa en grupp.'
+      : !vacationPeriod
+        ? 'Öppna Inställningar för att ange semesterperiod.'
+        : 'Öppna Inställningar för att lägga till anställda.';
+    vacationGrid.innerHTML = '<p class="grid-empty">' + msg + '</p>';
     return;
   }
 
@@ -226,7 +389,6 @@ function renderGrid() {
   const table = document.createElement('table');
   table.className = 'vacation-table';
 
-  // Header row 1: week numbers
   const thead = document.createElement('thead');
   const weekRow = document.createElement('tr');
 
@@ -252,7 +414,6 @@ function renderGrid() {
 
   thead.appendChild(weekRow);
 
-  // Header row 2: day names
   const dayRow = document.createElement('tr');
   weeks.forEach(() => {
     DAY_NAMES.forEach(d => {
@@ -263,10 +424,8 @@ function renderGrid() {
     });
   });
   thead.appendChild(dayRow);
-
   table.appendChild(thead);
 
-  // Body
   const tbody = document.createElement('tbody');
 
   employees.forEach(emp => {
@@ -283,7 +442,6 @@ function renderGrid() {
       for (let d = 1; d <= 7; d++) {
         const td = document.createElement('td');
         td.className = 'day-cell';
-
         if (d === 6 || d === 7) td.classList.add('weekend');
 
         const key = emp.id + '_' + w + '_' + d;
@@ -305,7 +463,6 @@ function renderGrid() {
     tbody.appendChild(row);
   });
 
-  // Summary row
   const summaryRow = document.createElement('tr');
   summaryRow.className = 'summary-row';
 
@@ -335,9 +492,8 @@ function renderGrid() {
   vacationGrid.appendChild(table);
 }
 
-// Event listeners
+// Events
 savePeriodBtn.addEventListener('click', savePeriod);
-
 addEmployeeBtn.addEventListener('click', addEmployee);
 employeeNameInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') addEmployee();
@@ -355,6 +511,7 @@ async function loadApp() {
   appLoaded = true;
   populateYearSelect();
   populateWeekSelects();
+  await loadGroups();
   await loadVacationPeriod();
   await loadEmployees();
   await loadAssignments();
