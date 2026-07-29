@@ -25,12 +25,12 @@ function populateYearSelect() {
 }
 
 function populateWeekSelects() {
-  [startWeekSelect, endWeekSelect].forEach((sel, i) => {
+  [startWeekSelect, endWeekSelect].forEach(sel => {
     sel.innerHTML = '';
     for (let w = 1; w <= 53; w++) {
       const opt = document.createElement('option');
       opt.value = w;
-      opt.textContent = `V${w}`;
+      opt.textContent = 'V' + w;
       sel.appendChild(opt);
     }
   });
@@ -49,7 +49,7 @@ async function loadVacationPeriod() {
   if (data) {
     startWeekSelect.value = data.start_week;
     endWeekSelect.value = data.end_week;
-    periodStatus.textContent = `Semesterperiod: V${data.start_week}–V${data.end_week}`;
+    periodStatus.textContent = 'Semesterperiod: V' + data.start_week + '–V' + data.end_week;
     periodStatus.className = 'period-status saved';
   } else {
     periodStatus.textContent = 'Ingen period sparad för detta år';
@@ -136,15 +136,23 @@ function renderEmployeeList() {
   employeeList.innerHTML = '';
   employees.forEach(emp => {
     const li = document.createElement('li');
-    li.innerHTML = `
-      <span class="employee-name">${emp.name}</span>
-      <button class="delete-btn" title="Ta bort">&times;</button>
-    `;
-    li.querySelector('.delete-btn').addEventListener('click', () => {
-      if (confirm(`Ta bort ${emp.name}?`)) {
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'employee-name';
+    nameSpan.textContent = emp.name;
+    li.appendChild(nameSpan);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'delete-btn';
+    delBtn.title = 'Ta bort';
+    delBtn.innerHTML = '&times;';
+    delBtn.addEventListener('click', () => {
+      if (confirm('Ta bort ' + emp.name + '?')) {
         deleteEmployee(emp.id);
       }
     });
+    li.appendChild(delBtn);
+
     employeeList.appendChild(li);
   });
 }
@@ -164,13 +172,13 @@ async function loadAssignments() {
 
   assignments = {};
   (data || []).forEach(a => {
-    const key = `${a.employee_id}_${a.week_number}`;
+    const key = a.employee_id + '_' + a.week_number;
     assignments[key] = a.id;
   });
 }
 
 async function toggleAssignment(employeeId, weekNumber) {
-  const key = `${employeeId}_${weekNumber}`;
+  const key = employeeId + '_' + weekNumber;
 
   if (assignments[key]) {
     await db
@@ -204,9 +212,7 @@ function renderGrid() {
   const startW = vacationPeriod.start_week;
   const endW = vacationPeriod.end_week;
   const weeks = [];
-  for (let w = startW; w <= endW; w++) {
-    weeks.push(w);
-  }
+  for (let w = startW; w <= endW; w++) weeks.push(w);
 
   const table = document.createElement('table');
   table.className = 'vacation-table';
@@ -214,21 +220,22 @@ function renderGrid() {
   // Header
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
+
   const nameHeader = document.createElement('th');
+  nameHeader.className = 'col-name';
   nameHeader.textContent = 'Anställd';
-  nameHeader.className = 'name-col';
   headerRow.appendChild(nameHeader);
 
   weeks.forEach(w => {
     const th = document.createElement('th');
-    th.textContent = `V${w}`;
-    th.className = 'week-col';
+    th.className = 'col-week';
+    th.textContent = 'V' + w;
     headerRow.appendChild(th);
   });
 
   const totalHeader = document.createElement('th');
+  totalHeader.className = 'col-total';
   totalHeader.textContent = 'Veckor';
-  totalHeader.className = 'total-col';
   headerRow.appendChild(totalHeader);
 
   thead.appendChild(headerRow);
@@ -236,37 +243,38 @@ function renderGrid() {
 
   // Body
   const tbody = document.createElement('tbody');
+
   employees.forEach(emp => {
     const row = document.createElement('tr');
 
     const nameCell = document.createElement('td');
+    nameCell.className = 'col-name';
     nameCell.textContent = emp.name;
-    nameCell.className = 'name-col';
     row.appendChild(nameCell);
 
     let totalWeeks = 0;
 
     weeks.forEach(w => {
-      const cell = document.createElement('td');
-      cell.className = 'week-cell';
-      const inner = document.createElement('div');
-      inner.className = 'week-cell-inner';
-      cell.appendChild(inner);
-      const key = `${emp.id}_${w}`;
-      const isVacation = !!assignments[key];
+      const td = document.createElement('td');
+      td.className = 'week-cell';
 
-      if (isVacation) {
-        cell.classList.add('vacation');
+      const pill = document.createElement('div');
+      pill.className = 'week-pill';
+      td.appendChild(pill);
+
+      const key = emp.id + '_' + w;
+      if (assignments[key]) {
+        td.classList.add('active');
         totalWeeks++;
       }
 
-      cell.addEventListener('click', () => toggleAssignment(emp.id, w));
-      row.appendChild(cell);
+      td.addEventListener('click', () => toggleAssignment(emp.id, w));
+      row.appendChild(td);
     });
 
     const totalCell = document.createElement('td');
+    totalCell.className = 'col-total emp-total';
     totalCell.textContent = totalWeeks;
-    totalCell.className = 'total-col total-value';
     row.appendChild(totalCell);
 
     tbody.appendChild(row);
@@ -275,21 +283,21 @@ function renderGrid() {
   // Summary row
   const summaryRow = document.createElement('tr');
   summaryRow.className = 'summary-row';
+
   const summaryLabel = document.createElement('td');
+  summaryLabel.className = 'col-name';
   summaryLabel.textContent = 'Antal lediga';
-  summaryLabel.className = 'name-col';
   summaryRow.appendChild(summaryLabel);
 
   weeks.forEach(w => {
-    const cell = document.createElement('td');
-    cell.className = 'week-col summary-cell';
+    const td = document.createElement('td');
     let count = 0;
     employees.forEach(emp => {
-      if (assignments[`${emp.id}_${w}`]) count++;
+      if (assignments[emp.id + '_' + w]) count++;
     });
-    cell.textContent = count;
-    if (count > 0) cell.classList.add('has-vacation');
-    summaryRow.appendChild(cell);
+    td.textContent = count || '';
+    if (count > 0) td.classList.add('has-count');
+    summaryRow.appendChild(td);
   });
 
   const emptyTotal = document.createElement('td');
