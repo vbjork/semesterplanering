@@ -54,7 +54,12 @@ function showApp(session) {
   if (typeof loadApp === 'function') {
     loadApp();
   } else {
-    window.addEventListener('load', () => loadApp());
+    const waitForApp = setInterval(() => {
+      if (typeof loadApp === 'function') {
+        clearInterval(waitForApp);
+        loadApp();
+      }
+    }, 50);
   }
 }
 
