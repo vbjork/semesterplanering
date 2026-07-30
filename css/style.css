@@ -711,8 +711,14 @@ body {
 .vacation-table .day-cell.weekend {
   background: #eaecf0;
 }
-.vacation-table .day-cell.active {
+.vacation-table .day-cell.cluster-single {
   border-radius: 6px;
+}
+.vacation-table .day-cell.cluster-start {
+  border-radius: 6px 0 0 6px;
+}
+.vacation-table .day-cell.cluster-end {
+  border-radius: 0 6px 6px 0;
 }
 .vacation-table .day-cell.active:hover {
   filter: brightness(0.9);

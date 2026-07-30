@@ -555,6 +555,7 @@ function renderGrid() {
 
     let totalDays = 0;
     const categoryCounts = {};
+    const dayCells = [];
 
     weeks.forEach(w => {
       for (let d = 1; d <= 7; d++) {
@@ -578,9 +579,19 @@ function renderGrid() {
         });
         td.addEventListener('mouseenter', () => handleDragEnter(td, emp.id, w, d));
 
+        dayCells.push(td);
         row.appendChild(td);
       }
     });
+
+    for (let i = 0; i < dayCells.length; i++) {
+      if (!dayCells[i].classList.contains('active')) continue;
+      const prev = i > 0 && dayCells[i - 1].classList.contains('active');
+      const next = i < dayCells.length - 1 && dayCells[i + 1].classList.contains('active');
+      if (!prev && !next) dayCells[i].classList.add('cluster-single');
+      else if (!prev) dayCells[i].classList.add('cluster-start');
+      else if (!next) dayCells[i].classList.add('cluster-end');
+    }
 
     const totalCell = document.createElement('td');
     totalCell.className = 'col-total emp-total';
