@@ -586,11 +586,24 @@ function renderGrid() {
     totalCell.className = 'col-total emp-total';
     totalCell.textContent = totalDays;
     if (totalDays > 0) {
-      const breakdown = Object.entries(categoryCounts)
+      totalCell.classList.add('has-tooltip');
+      const tooltip = document.createElement('div');
+      tooltip.className = 'emp-tooltip';
+      Object.entries(categoryCounts)
         .sort((a, b) => b[1] - a[1])
-        .map(([cat, count]) => `${count} ${count === 1 ? 'dag' : 'dagar'} ${getLeaveTypeName(parseInt(cat))}`)
-        .join('\n');
-      totalCell.title = breakdown;
+        .forEach(([cat, count]) => {
+          const row = document.createElement('div');
+          row.className = 'emp-tooltip-row';
+          const dot = document.createElement('span');
+          dot.className = 'emp-tooltip-dot';
+          dot.style.background = COLORS[parseInt(cat)].bg;
+          const text = document.createElement('span');
+          text.textContent = `${count} ${count === 1 ? 'dag' : 'dagar'} ${getLeaveTypeName(parseInt(cat))}`;
+          row.appendChild(dot);
+          row.appendChild(text);
+          tooltip.appendChild(row);
+        });
+      totalCell.appendChild(tooltip);
     }
     row.appendChild(totalCell);
 
