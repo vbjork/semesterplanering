@@ -11,16 +11,16 @@ let leaveTypes = {};
 const DAY_NAMES = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
 
 const COLORS = [
-  { bg: '#4ade80', hover: '#22c55e', default: 'Semester' },
-  { bg: '#60a5fa', hover: '#3b82f6', default: 'Föräldraledig' },
-  { bg: '#c084fc', hover: '#a855f7', default: 'VAB' },
-  { bg: '#fb923c', hover: '#f97316', default: 'Tjänstledig' },
-  { bg: '#f472b6', hover: '#ec4899', default: 'Sjuk' },
-  { bg: '#2dd4bf', hover: '#14b8a6', default: 'Utbildning' },
-  { bg: '#facc15', hover: '#eab308', default: 'Kompledigt' },
-  { bg: '#f87171', hover: '#ef4444', default: 'Permission' },
-  { bg: '#818cf8', hover: '#6366f1', default: 'Annat 1' },
-  { bg: '#94a3b8', hover: '#64748b', default: 'Annat 2' },
+  { bg: '#b6e2c8', hover: '#8fd4ac', default: 'Semester' },
+  { bg: '#bbc5f5', hover: '#9aa8f0', default: 'Föräldraledig' },
+  { bg: '#f5c4a1', hover: '#f0a878', default: 'VAB' },
+  { bg: '#f5dfa1', hover: '#f0d078', default: 'Tjänstledig' },
+  { bg: '#f5b0c5', hover: '#f08da8', default: 'Sjuk' },
+  { bg: '#a1ddd5', hover: '#78d0c4', default: 'Utbildning' },
+  { bg: '#f5d4a8', hover: '#f0c080', default: 'Kompledigt' },
+  { bg: '#e2b5f5', hover: '#d494f0', default: 'Permission' },
+  { bg: '#f5a8a8', hover: '#f08080', default: 'Annat 1' },
+  { bg: '#c8ced8', hover: '#aeb6c4', default: 'Annat 2' },
 ];
 
 function getLeaveTypeName(index) {
