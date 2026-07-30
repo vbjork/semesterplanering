@@ -51,7 +51,11 @@ function showApp(session) {
     adminBtn.classList.add('hidden');
   }
 
-  loadApp();
+  if (typeof loadApp === 'function') {
+    loadApp();
+  } else {
+    window.addEventListener('load', () => loadApp());
+  }
 }
 
 function showResetForm() {
