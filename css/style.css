@@ -712,7 +712,7 @@ body {
   background: #eaecf0;
 }
 .vacation-table .day-cell.active {
-  /* color set via inline style */
+  border-radius: 6px;
 }
 .vacation-table .day-cell.active:hover {
   filter: brightness(0.9);
