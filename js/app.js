@@ -117,6 +117,8 @@ function renderGroupList() {
     const name = document.createElement('span');
     name.className = 'group-item-name';
     name.textContent = g.name;
+    name.title = 'Dubbelklicka för att byta namn';
+    name.addEventListener('dblclick', () => startRenameGroup(g, name));
     item.appendChild(name);
 
     if (groups.length > 1) {
@@ -132,6 +134,35 @@ function renderGroupList() {
     }
 
     groupList.appendChild(item);
+  });
+}
+
+function startRenameGroup(group, spanEl) {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'ds-input';
+  input.value = group.name;
+  input.style.padding = '4px 8px';
+  input.style.fontSize = '0.82rem';
+
+  spanEl.replaceWith(input);
+  input.focus();
+  input.select();
+
+  const save = async () => {
+    const newName = input.value.trim();
+    if (newName && newName !== group.name) {
+      await db.from('groups').update({ name: newName }).eq('id', group.id);
+      await loadGroups();
+    } else {
+      renderGroupList();
+    }
+  };
+
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') { input.value = group.name; input.blur(); }
   });
 }
 
