@@ -588,7 +588,7 @@ function renderGrid() {
     if (totalDays > 0) {
       const breakdown = Object.entries(categoryCounts)
         .sort((a, b) => b[1] - a[1])
-        .map(([cat, count]) => `${count} dagar ${getLeaveTypeName(parseInt(cat))}`)
+        .map(([cat, count]) => `${count} ${count === 1 ? 'dag' : 'dagar'} ${getLeaveTypeName(parseInt(cat))}`)
         .join('\n');
       totalCell.title = breakdown;
     }
