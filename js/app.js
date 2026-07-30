@@ -554,6 +554,7 @@ function renderGrid() {
     row.appendChild(nameCell);
 
     let totalDays = 0;
+    const categoryCounts = {};
 
     weeks.forEach(w => {
       for (let d = 1; d <= 7; d++) {
@@ -568,6 +569,7 @@ function renderGrid() {
           td.style.background = COLORS[assignment.category].bg;
           td.title = getLeaveTypeName(assignment.category);
           totalDays++;
+          categoryCounts[assignment.category] = (categoryCounts[assignment.category] || 0) + 1;
         }
 
         td.addEventListener('mousedown', (e) => {
@@ -583,6 +585,13 @@ function renderGrid() {
     const totalCell = document.createElement('td');
     totalCell.className = 'col-total emp-total';
     totalCell.textContent = totalDays;
+    if (totalDays > 0) {
+      const breakdown = Object.entries(categoryCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([cat, count]) => `${count} dagar ${getLeaveTypeName(parseInt(cat))}`)
+        .join('\n');
+      totalCell.title = breakdown;
+    }
     row.appendChild(totalCell);
 
     tbody.appendChild(row);
