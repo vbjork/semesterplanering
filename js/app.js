@@ -52,6 +52,19 @@ const periodBadge = document.getElementById('period-badge');
 const currentGroupNameEl = document.getElementById('current-group-name');
 const colorPalette = document.getElementById('color-palette');
 const leaveTypeList = document.getElementById('leave-type-list');
+const exportBtn = document.getElementById('export-btn');
+const dashboardBtn = document.getElementById('dashboard-btn');
+const dashboardOverlay = document.getElementById('dashboard-overlay');
+const closeDashboard = document.getElementById('close-dashboard');
+const dashboardChart = document.getElementById('dashboard-chart');
+const noteModal = document.getElementById('note-modal');
+const noteText = document.getElementById('note-text');
+const noteModalTitle = document.getElementById('note-modal-title');
+const saveNoteBtn = document.getElementById('save-note-btn');
+const deleteNoteBtn = document.getElementById('delete-note-btn');
+const closeNote = document.getElementById('close-note');
+let cellNotes = {};
+let currentNoteKey = null;
 
 // Settings panel
 settingsBtn.addEventListener('click', () => {
@@ -297,6 +310,7 @@ async function switchGroup(id) {
   updateCurrentGroupName();
   await loadEmployees();
   await loadAssignments();
+  await loadNotes();
   renderGrid();
 }
 
@@ -573,11 +587,21 @@ function renderGrid() {
           categoryCounts[assignment.category] = (categoryCounts[assignment.category] || 0) + 1;
         }
 
+        const noteKey = emp.id + '_' + w + '_' + d;
+        if (cellNotes[noteKey]) {
+          td.classList.add('has-note');
+          td.title = (td.title ? td.title + '\n' : '') + '📝 ' + cellNotes[noteKey].note;
+        }
+
         td.addEventListener('mousedown', (e) => {
           e.preventDefault();
           handleDragStart(td, emp.id, w, d);
         });
         td.addEventListener('mouseenter', () => handleDragEnter(td, emp.id, w, d));
+        td.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          openNoteModal(emp.id, w, d, emp.name);
+        });
 
         dayCells.push(td);
         row.appendChild(td);
@@ -662,6 +686,222 @@ yearSelect.addEventListener('change', async () => {
   renderGrid();
 });
 
+// Export to Excel
+function exportToExcel() {
+  if (!vacationPeriod || employees.length === 0) return;
+  const startW = vacationPeriod.start_week;
+  const endW = vacationPeriod.end_week;
+  const weeks = [];
+  for (let w = startW; w <= endW; w++) weeks.push(w);
+
+  const header1 = ['Anställd'];
+  const header2 = [''];
+  weeks.forEach(w => {
+    DAY_NAMES.forEach((d, i) => {
+      header1.push(i === 0 ? 'V' + w : '');
+      header2.push(d);
+    });
+  });
+  header1.push('Dagar');
+  header2.push('');
+
+  const rows = [header1, header2];
+  employees.forEach(emp => {
+    const row = [emp.name];
+    let total = 0;
+    weeks.forEach(w => {
+      for (let d = 1; d <= 7; d++) {
+        const key = emp.id + '_' + w + '_' + d;
+        const a = assignments[key];
+        if (a) {
+          row.push(getLeaveTypeName(a.category));
+          total++;
+        } else {
+          row.push('');
+        }
+      }
+    });
+    row.push(total);
+    rows.push(row);
+  });
+
+  const summaryRow = ['Antal lediga'];
+  weeks.forEach(w => {
+    for (let d = 1; d <= 7; d++) {
+      let count = 0;
+      employees.forEach(emp => {
+        if (assignments[emp.id + '_' + w + '_' + d]) count++;
+      });
+      summaryRow.push(count || '');
+    }
+  });
+  summaryRow.push('');
+  rows.push(summaryRow);
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const merges = [];
+  weeks.forEach((w, i) => {
+    const col = 1 + i * 7;
+    merges.push({ s: { r: 0, c: col }, e: { r: 0, c: col + 6 } });
+  });
+  ws['!merges'] = merges;
+
+  const wb = XLSX.utils.book_new();
+  const groupName = groups.find(g => g.id === currentGroupId)?.name || 'Schema';
+  XLSX.utils.book_append_sheet(wb, ws, groupName);
+  XLSX.writeFile(wb, `Semesterplanering_${groupName}_${currentYear}.xlsx`);
+}
+
+exportBtn.addEventListener('click', exportToExcel);
+
+// Dashboard
+function renderDashboard() {
+  dashboardChart.innerHTML = '';
+  if (!vacationPeriod || employees.length === 0) {
+    dashboardChart.innerHTML = '<p class="grid-empty">Ingen data att visa.</p>';
+    return;
+  }
+  const startW = vacationPeriod.start_week;
+  const endW = vacationPeriod.end_week;
+  const maxCount = employees.length;
+
+  for (let w = startW; w <= endW; w++) {
+    const section = document.createElement('div');
+    section.className = 'dashboard-week';
+    const label = document.createElement('div');
+    label.className = 'dashboard-week-label';
+    label.textContent = 'Vecka ' + w;
+    section.appendChild(label);
+
+    for (let d = 1; d <= 5; d++) {
+      let count = 0;
+      employees.forEach(emp => {
+        if (assignments[emp.id + '_' + w + '_' + d]) count++;
+      });
+      const row = document.createElement('div');
+      row.className = 'dashboard-bar-row';
+
+      const dayLabel = document.createElement('span');
+      dayLabel.className = 'dashboard-bar-label';
+      dayLabel.textContent = DAY_NAMES[d - 1];
+      row.appendChild(dayLabel);
+
+      const track = document.createElement('div');
+      track.className = 'dashboard-bar-track';
+      const fill = document.createElement('div');
+      fill.className = 'dashboard-bar-fill';
+      const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
+      fill.style.width = pct + '%';
+      fill.style.background = pct > 60 ? '#f5a8a8' : pct > 30 ? '#f5dfa1' : '#b6e2c8';
+      if (count > 0) {
+        const countSpan = document.createElement('span');
+        countSpan.className = 'dashboard-bar-count';
+        countSpan.textContent = count;
+        fill.appendChild(countSpan);
+      }
+      track.appendChild(fill);
+      row.appendChild(track);
+
+      section.appendChild(row);
+    }
+    dashboardChart.appendChild(section);
+  }
+}
+
+dashboardBtn.addEventListener('click', () => {
+  renderDashboard();
+  dashboardOverlay.classList.remove('hidden');
+});
+closeDashboard.addEventListener('click', () => dashboardOverlay.classList.add('hidden'));
+dashboardOverlay.addEventListener('click', (e) => {
+  if (e.target === dashboardOverlay) dashboardOverlay.classList.add('hidden');
+});
+
+// Cell notes
+async function loadNotes() {
+  if (employees.length === 0) { cellNotes = {}; return; }
+  const employeeIds = employees.map(e => e.id);
+  const { data, error } = await db
+    .from('cell_notes')
+    .select('*')
+    .in('employee_id', employeeIds)
+    .eq('year', currentYear);
+
+  cellNotes = {};
+  if (!error && data) {
+    data.forEach(n => {
+      cellNotes[n.employee_id + '_' + n.week_number + '_' + n.day_number] = { id: n.id, note: n.note };
+    });
+  }
+}
+
+function openNoteModal(employeeId, week, day, empName) {
+  currentNoteKey = { employeeId, week, day };
+  const key = employeeId + '_' + week + '_' + day;
+  const existing = cellNotes[key];
+  noteText.value = existing ? existing.note : '';
+  noteModalTitle.textContent = empName + ' — V' + week + ' ' + DAY_NAMES[day - 1];
+  deleteNoteBtn.style.display = existing ? '' : 'none';
+  noteModal.classList.remove('hidden');
+  noteText.focus();
+}
+
+async function saveNote() {
+  if (!currentNoteKey) return;
+  const { employeeId, week, day } = currentNoteKey;
+  const key = employeeId + '_' + week + '_' + day;
+  const text = noteText.value.trim();
+
+  if (!text) {
+    await deleteNote();
+    return;
+  }
+
+  if (cellNotes[key]) {
+    await db.from('cell_notes').update({ note: text }).eq('id', cellNotes[key].id);
+    cellNotes[key].note = text;
+  } else {
+    const { data, error } = await db
+      .from('cell_notes')
+      .insert({
+        employee_id: employeeId,
+        year: currentYear,
+        week_number: week,
+        day_number: day,
+        note: text
+      })
+      .select()
+      .single();
+    if (!error) cellNotes[key] = { id: data.id, note: data.note };
+  }
+
+  noteModal.classList.add('hidden');
+  renderGrid();
+}
+
+async function deleteNote() {
+  if (!currentNoteKey) return;
+  const { employeeId, week, day } = currentNoteKey;
+  const key = employeeId + '_' + week + '_' + day;
+  if (cellNotes[key]) {
+    await db.from('cell_notes').delete().eq('id', cellNotes[key].id);
+    delete cellNotes[key];
+  }
+  noteModal.classList.add('hidden');
+  renderGrid();
+}
+
+saveNoteBtn.addEventListener('click', saveNote);
+deleteNoteBtn.addEventListener('click', deleteNote);
+closeNote.addEventListener('click', () => noteModal.classList.add('hidden'));
+noteModal.addEventListener('click', (e) => {
+  if (e.target === noteModal) noteModal.classList.add('hidden');
+});
+noteText.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveNote(); }
+  if (e.key === 'Escape') noteModal.classList.add('hidden');
+});
+
 async function loadApp() {
   if (appLoaded) return;
   appLoaded = true;
@@ -674,5 +914,6 @@ async function loadApp() {
   await loadVacationPeriod();
   await loadEmployees();
   await loadAssignments();
+  await loadNotes();
   renderGrid();
 }

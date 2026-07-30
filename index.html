@@ -49,6 +49,8 @@
       </div>
       <div class="topbar-right">
         <span id="period-badge" class="period-badge"></span>
+        <button id="export-btn" class="topbar-btn">Exportera</button>
+        <button id="dashboard-btn" class="topbar-btn">Översikt</button>
         <button id="settings-btn" class="topbar-btn">Inställningar</button>
         <button id="admin-btn" class="topbar-btn hidden">Admin</button>
         <span id="user-email" class="topbar-email"></span>
@@ -108,6 +110,34 @@
         </div>
       </div>
     </div>
+
+    <div id="dashboard-overlay" class="overlay hidden">
+      <div class="panel" style="width:600px;">
+        <div class="panel-header">
+          <span class="panel-title">Översikt — lediga per vecka</span>
+          <button id="close-dashboard" class="panel-close">&times;</button>
+        </div>
+        <div class="panel-body">
+          <div id="dashboard-chart"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="note-modal" class="overlay hidden">
+      <div class="note-modal-box">
+        <div class="panel-header">
+          <span class="panel-title" id="note-modal-title">Anteckning</span>
+          <button id="close-note" class="panel-close">&times;</button>
+        </div>
+        <div style="padding:16px 20px;">
+          <textarea id="note-text" class="ds-input" rows="3" placeholder="Skriv en anteckning..."></textarea>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button id="save-note-btn" class="ds-btn ds-btn-primary" style="flex:1;">Spara</button>
+            <button id="delete-note-btn" class="ds-btn ds-btn-danger" style="flex:1;">Ta bort</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div id="admin-container" class="hidden">
@@ -128,6 +158,7 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/auth.js"></script>
