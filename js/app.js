@@ -752,7 +752,28 @@ function exportToExcel() {
   XLSX.writeFile(wb, `Semesterplanering_${groupName}_${currentYear}.xlsx`);
 }
 
-exportBtn.addEventListener('click', exportToExcel);
+const exportMenu = document.getElementById('export-menu');
+const exportExcelBtn = document.getElementById('export-excel');
+const exportPdfBtn = document.getElementById('export-pdf');
+
+exportBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  exportMenu.classList.toggle('open');
+});
+document.addEventListener('click', () => exportMenu.classList.remove('open'));
+
+exportExcelBtn.addEventListener('click', () => {
+  exportMenu.classList.remove('open');
+  exportToExcel();
+});
+
+exportPdfBtn.addEventListener('click', () => {
+  exportMenu.classList.remove('open');
+  const groupName = groups.find(g => g.id === currentGroupId)?.name || '';
+  const subtitle = document.getElementById('print-subtitle');
+  subtitle.textContent = groupName + ' — V' + vacationPeriod.start_week + '–V' + vacationPeriod.end_week + ' ' + currentYear;
+  window.print();
+});
 
 // Dashboard
 function renderDashboard() {

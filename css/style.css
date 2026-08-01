@@ -921,3 +921,124 @@ body {
   .panel { width: 100%; max-width: 100%; }
   .grid-fullscreen { padding: 8px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Export dropdown
+   ═══════════════════════════════════════════════════════════════ */
+
+.export-wrapper {
+  position: relative;
+}
+.export-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  z-index: 200;
+  min-width: 160px;
+  overflow: hidden;
+}
+.export-menu.open { display: block; }
+.export-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 0.82rem;
+  font-family: var(--font-family);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.export-menu button:hover {
+  background: var(--color-bg-hover);
+}
+.export-menu button + button {
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Print / PDF
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 12mm;
+  }
+
+  body {
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .auth-wrapper,
+  .topbar,
+  .color-bar,
+  .overlay,
+  #note-modal,
+  .emp-tooltip {
+    display: none !important;
+  }
+
+  #app-container {
+    height: auto !important;
+  }
+
+  .app-body {
+    overflow: visible !important;
+  }
+
+  .grid-fullscreen {
+    overflow: visible !important;
+    padding: 0 !important;
+    justify-content: flex-start !important;
+  }
+
+  .print-header {
+    display: block !important;
+    margin-bottom: 12px;
+  }
+  .print-header h1 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0 0 2px;
+  }
+  .print-header p {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .vacation-table {
+    font-size: 0.72rem;
+  }
+  .vacation-table .col-name {
+    position: static !important;
+  }
+  .vacation-table thead th {
+    position: static !important;
+  }
+  .vacation-table .day-cell {
+    height: 22px !important;
+    padding: 1px !important;
+  }
+  .vacation-table .day-cell.active {
+    border: 0.5px solid rgba(0,0,0,0.1);
+  }
+  .vacation-table .day-cell.has-note::after {
+    display: none;
+  }
+  .col-total.emp-total {
+    font-size: 0.82rem;
+  }
+}

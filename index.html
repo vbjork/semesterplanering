@@ -49,7 +49,13 @@
       </div>
       <div class="topbar-right">
         <span id="period-badge" class="period-badge"></span>
-        <button id="export-btn" class="topbar-btn">Exportera</button>
+        <div class="export-wrapper">
+          <button id="export-btn" class="topbar-btn">Exportera</button>
+          <div id="export-menu" class="export-menu">
+            <button id="export-excel">Exportera till Excel</button>
+            <button id="export-pdf">Exportera till PDF</button>
+          </div>
+        </div>
         <button id="dashboard-btn" class="topbar-btn">Översikt</button>
         <button id="settings-btn" class="topbar-btn">Inställningar</button>
         <button id="admin-btn" class="topbar-btn hidden">Admin</button>
@@ -60,6 +66,10 @@
 
     <div class="color-bar">
       <div id="color-palette" class="color-palette"></div>
+    </div>
+    <div class="print-header" style="display:none;">
+      <h1>Semesterplanering</h1>
+      <p id="print-subtitle"></p>
     </div>
     <div class="app-body">
       <div class="grid-fullscreen" id="vacation-grid"></div>
