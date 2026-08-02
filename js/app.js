@@ -7,6 +7,8 @@ let currentGroupId = null;
 let appLoaded = false;
 let activeColor = 0;
 let leaveTypes = {};
+let viewSpan = null;
+let viewStart = null;
 
 const DAY_NAMES = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
 
@@ -531,6 +533,8 @@ document.addEventListener('mouseup', handleDragEnd);
 function renderGrid() {
   vacationGrid.innerHTML = '';
 
+  document.getElementById('week-nav-container').innerHTML = '';
+
   if (!vacationPeriod || employees.length === 0) {
     const msg = !currentGroupId
       ? 'Öppna Inställningar för att skapa en grupp.'
@@ -543,8 +547,68 @@ function renderGrid() {
 
   const startW = vacationPeriod.start_week;
   const endW = vacationPeriod.end_week;
-  const weeks = [];
-  for (let w = startW; w <= endW; w++) weeks.push(w);
+  const totalWeeks = endW - startW + 1;
+
+  if (viewStart === null) viewStart = startW;
+  if (viewStart < startW) viewStart = startW;
+
+  const allWeeks = [];
+  for (let w = startW; w <= endW; w++) allWeeks.push(w);
+
+  let weeks;
+  if (viewSpan === null) {
+    weeks = allWeeks;
+  } else {
+    if (viewStart + viewSpan - 1 > endW) viewStart = endW - viewSpan + 1;
+    if (viewStart < startW) viewStart = startW;
+    const visEnd = Math.min(viewStart + viewSpan - 1, endW);
+    weeks = [];
+    for (let w = viewStart; w <= visEnd; w++) weeks.push(w);
+  }
+
+  const nav = document.createElement('div');
+  nav.className = 'week-nav';
+
+  const leftBtn = document.createElement('button');
+  leftBtn.className = 'week-nav-btn';
+  leftBtn.textContent = '‹';
+  leftBtn.disabled = viewSpan === null || viewStart <= startW;
+  leftBtn.addEventListener('click', () => { viewStart--; renderGrid(); });
+
+  const rightBtn = document.createElement('button');
+  rightBtn.className = 'week-nav-btn';
+  rightBtn.textContent = '›';
+  rightBtn.disabled = viewSpan === null || viewStart + viewSpan - 1 >= endW;
+  rightBtn.addEventListener('click', () => { viewStart++; renderGrid(); });
+
+  const spanLabel = document.createElement('span');
+  spanLabel.className = 'week-nav-label';
+  spanLabel.textContent = viewSpan === null
+    ? 'V' + startW + '–V' + endW
+    : 'V' + weeks[0] + '–V' + weeks[weeks.length - 1] + ' av V' + startW + '–V' + endW;
+
+  const makeZoom = (label, span) => {
+    const btn = document.createElement('button');
+    btn.className = 'week-nav-zoom' + (viewSpan === span ? ' active' : '');
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      viewSpan = span;
+      if (viewSpan !== null && viewSpan >= totalWeeks) viewSpan = null;
+      renderGrid();
+    });
+    return btn;
+  };
+
+  nav.appendChild(leftBtn);
+  nav.appendChild(makeZoom('4v', 4));
+  nav.appendChild(makeZoom('8v', 8));
+  nav.appendChild(makeZoom('Alla', null));
+  nav.appendChild(spanLabel);
+  nav.appendChild(rightBtn);
+
+  const weekNavContainer = document.getElementById('week-nav-container');
+  weekNavContainer.innerHTML = '';
+  weekNavContainer.appendChild(nav);
 
   const table = document.createElement('table');
   table.className = 'vacation-table';
