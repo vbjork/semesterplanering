@@ -882,6 +882,19 @@ exportPdfBtn.addEventListener('click', () => {
   const groupName = groups.find(g => g.id === currentGroupId)?.name || '';
   const subtitle = document.getElementById('print-subtitle');
   subtitle.textContent = groupName + ' — V' + vacationPeriod.start_week + '–V' + vacationPeriod.end_week + ' ' + currentYear;
+
+  const legend = document.getElementById('print-legend');
+  legend.innerHTML = '';
+  const usedCategories = new Set();
+  Object.values(assignments).forEach(a => usedCategories.add(a.category));
+  usedCategories.forEach(cat => {
+    const item = document.createElement('span');
+    item.className = 'print-legend-item';
+    item.innerHTML = '<span class="print-legend-dot" style="background:' + COLORS[cat].bg + '"></span>' + getLeaveTypeName(cat);
+    legend.appendChild(item);
+  });
+
+  document.getElementById('print-date').textContent = 'Utskriven ' + new Date().toLocaleDateString('sv-SE');
   window.print();
 });
 

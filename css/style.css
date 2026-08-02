@@ -1135,7 +1135,7 @@ body {
 @media print {
   @page {
     size: landscape;
-    margin: 12mm;
+    margin: 10mm 12mm 14mm;
   }
 
   body {
@@ -1169,24 +1169,66 @@ body {
     justify-content: flex-start !important;
   }
 
+  /* Header */
   .print-header {
     display: block !important;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #6366f1;
   }
   .print-header h1 {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--color-primary);
+    font-size: 18px;
+    font-weight: 800;
+    color: #1e293b;
     margin: 0 0 2px;
+    letter-spacing: -0.02em;
   }
   .print-header p {
     font-size: 11px;
-    color: var(--color-text-muted);
-    margin: 0;
+    color: #64748b;
+    margin: 0 0 6px;
   }
 
+  /* Legend */
+  .print-legend {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin-top: 4px;
+  }
+  .print-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    color: #475569;
+  }
+  .print-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    border: 0.5px solid rgba(0,0,0,0.15);
+    flex-shrink: 0;
+  }
+
+  /* Footer */
+  .print-footer {
+    display: block !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: right;
+    font-size: 8px;
+    color: #94a3b8;
+    padding: 4px 12mm;
+  }
+
+  /* Table */
   .vacation-table {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 4px;
   }
   .vacation-table .col-name,
   .vacation-table .col-total {
@@ -1194,18 +1236,80 @@ body {
   }
   .vacation-table thead th {
     position: static !important;
+    background: #eef2ff !important;
+    color: #4338ca;
+    border-bottom: 1.5px solid #a5b4fc;
   }
+  .vacation-table thead tr:first-child th {
+    padding: 3px 1px 2px;
+    font-size: 0.65rem;
+    font-weight: 700;
+  }
+  .vacation-table thead tr:last-child th {
+    font-size: 0.55rem;
+    padding: 1px 1px 2px;
+  }
+  .vacation-table .col-week-group {
+    border-left: 1.5px solid #a5b4fc;
+  }
+
+  /* Zebra striping */
+  .vacation-table tbody tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+  .vacation-table tbody tr:nth-child(even) .day-cell.weekend {
+    background: #eef0f4;
+  }
+  .vacation-table tbody tr:nth-child(even) .day-cell.active {
+    background: unset;
+  }
+
   .vacation-table .day-cell {
-    height: 22px !important;
-    padding: 1px !important;
+    height: 14px !important;
+    padding: 0 !important;
   }
   .vacation-table .day-cell.active {
-    border: 0.5px solid rgba(0,0,0,0.1);
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 2px;
   }
   .vacation-table .day-cell.has-note::after {
     display: none;
   }
+
+  /* Week separator lines */
+  .vacation-table tbody td.day-cell:nth-of-type(7n+2) {
+    border-left: 1.5px solid #cbd5e1;
+  }
+
+  /* Name column */
+  .vacation-table tbody td.col-name {
+    font-weight: 600;
+    font-size: 0.68rem;
+    border-right: 1.5px solid #cbd5e1;
+    padding: 1px 6px;
+  }
+
+  /* Total column */
+  .vacation-table .col-total {
+    border-left: 1.5px solid #cbd5e1;
+  }
   .col-total.emp-total {
-    font-size: 0.82rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #4338ca;
+  }
+
+  /* Summary row */
+  .vacation-table .summary-row td {
+    border-top: 1.5px solid #cbd5e1;
+    font-weight: 700;
+    font-size: 0.62rem;
+    color: #475569;
+    padding: 2px 1px;
+    background: #f1f5f9;
+  }
+  .vacation-table .summary-row .has-count {
+    color: #dc2626;
+    font-weight: 800;
   }
 }
