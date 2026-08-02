@@ -453,6 +453,100 @@ body {
 .period-controls .ds-select {
   flex: 1;
 }
+
+/* Range slider for week selection */
+.range-slider-wrap {
+  margin-top: 10px;
+}
+.range-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+.range-slider-labels strong {
+  color: var(--color-primary);
+  font-size: 1rem;
+}
+.range-slider-track {
+  position: relative;
+  height: 36px;
+}
+.range-slider-fill {
+  position: absolute;
+  top: 14px;
+  height: 6px;
+  background: var(--color-primary);
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 1;
+}
+.range-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 36px;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+  z-index: 2;
+}
+.range-input::-webkit-slider-runnable-track {
+  height: 6px;
+  background: transparent;
+}
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  cursor: pointer;
+  pointer-events: all;
+  margin-top: -7px;
+  position: relative;
+  z-index: 2;
+}
+.range-input::-moz-range-track {
+  height: 6px;
+  background: transparent;
+  border: none;
+}
+.range-input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  cursor: pointer;
+  pointer-events: all;
+}
+.range-slider-track::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+}
+.range-slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--color-text-faint);
+  margin-top: 2px;
+  padding: 0 2px;
+}
 .period-status {
   margin-top: 8px;
   font-size: 0.78rem;

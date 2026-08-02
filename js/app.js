@@ -168,19 +168,48 @@ function populateYearSelect() {
   }
 }
 
+const rangeStartLabel = document.getElementById('range-start-label');
+const rangeEndLabel = document.getElementById('range-end-label');
+const rangeFill = document.getElementById('range-fill');
+
 function populateWeekSelects() {
-  [startWeekSelect, endWeekSelect].forEach(sel => {
-    sel.innerHTML = '';
-    for (let w = 1; w <= 53; w++) {
-      const opt = document.createElement('option');
-      opt.value = w;
-      opt.textContent = w;
-      sel.appendChild(opt);
-    }
-  });
   startWeekSelect.value = 25;
   endWeekSelect.value = 35;
+  updateRangeSlider();
 }
+
+function updateRangeSlider() {
+  let startVal = parseInt(startWeekSelect.value);
+  let endVal = parseInt(endWeekSelect.value);
+  if (startVal > endVal) {
+    const tmp = startVal;
+    startVal = endVal;
+    endVal = tmp;
+    startWeekSelect.value = startVal;
+    endWeekSelect.value = endVal;
+  }
+  rangeStartLabel.textContent = startVal;
+  rangeEndLabel.textContent = endVal;
+  const min = 1, max = 53;
+  const leftPct = ((startVal - min) / (max - min)) * 100;
+  const rightPct = ((endVal - min) / (max - min)) * 100;
+  rangeFill.style.left = leftPct + '%';
+  rangeFill.style.width = (rightPct - leftPct) + '%';
+}
+
+startWeekSelect.addEventListener('input', () => {
+  if (parseInt(startWeekSelect.value) > parseInt(endWeekSelect.value)) {
+    startWeekSelect.value = endWeekSelect.value;
+  }
+  updateRangeSlider();
+});
+
+endWeekSelect.addEventListener('input', () => {
+  if (parseInt(endWeekSelect.value) < parseInt(startWeekSelect.value)) {
+    endWeekSelect.value = startWeekSelect.value;
+  }
+  updateRangeSlider();
+});
 
 // Groups
 async function loadGroups() {
@@ -329,6 +358,7 @@ async function loadVacationPeriod() {
   if (data) {
     startWeekSelect.value = data.start_week;
     endWeekSelect.value = data.end_week;
+    updateRangeSlider();
     periodStatus.textContent = 'Sparad: V' + data.start_week + '–V' + data.end_week;
     periodStatus.className = 'period-status saved';
     periodBadge.textContent = 'V' + data.start_week + '–V' + data.end_week + ' ' + currentYear;

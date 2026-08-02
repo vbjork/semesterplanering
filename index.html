@@ -85,11 +85,21 @@
           <div class="panel-section">
             <div class="panel-section-label">Semesterperiod</div>
             <div class="period-controls">
-              <select id="year-select" class="ds-select"></select>
-              <span class="sep">V</span>
-              <select id="start-week" class="ds-select"></select>
-              <span class="sep">till V</span>
-              <select id="end-week" class="ds-select"></select>
+              <select id="year-select" class="ds-select" style="width:90px;"></select>
+            </div>
+            <div class="range-slider-wrap">
+              <div class="range-slider-labels">
+                <span>V <strong id="range-start-label">25</strong></span>
+                <span>V <strong id="range-end-label">35</strong></span>
+              </div>
+              <div class="range-slider-track" id="range-track">
+                <div class="range-slider-fill" id="range-fill"></div>
+                <input type="range" id="start-week" min="1" max="53" value="25" class="range-input range-input-start">
+                <input type="range" id="end-week" min="1" max="53" value="35" class="range-input range-input-end">
+              </div>
+              <div class="range-slider-ticks">
+                <span>1</span><span>10</span><span>20</span><span>30</span><span>40</span><span>53</span>
+              </div>
             </div>
             <button id="save-period-btn" class="ds-btn ds-btn-primary" style="width:100%;margin-top:8px;">Spara period</button>
             <div id="period-status" class="period-status"></div>
