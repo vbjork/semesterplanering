@@ -776,7 +776,8 @@ body {
 }
 
 .vacation-table {
-  width: max-content;
+  width: 100%;
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 0.82rem;
@@ -815,14 +816,14 @@ body {
   border-left: 1px solid var(--color-primary-border);
 }
 .vacation-table .col-day {
-  min-width: 30px;
-  width: 30px;
+  min-width: 18px;
 }
 .vacation-table .col-name {
   text-align: left;
   padding-left: 14px;
   padding-right: 10px;
-  min-width: 140px;
+  width: 120px;
+  min-width: 120px;
   position: sticky;
   left: 0;
   z-index: 2;
@@ -836,10 +837,19 @@ body {
   font-size: 0.82rem;
 }
 .vacation-table .col-total {
-  min-width: 48px;
+  width: 52px;
+  min-width: 52px;
   text-align: center;
   border-left: 1px solid var(--color-border);
   font-weight: 700;
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background: var(--color-bg-card);
+}
+.vacation-table thead .col-total {
+  background: var(--color-primary-lighter);
+  z-index: 3;
 }
 .vacation-table tbody td {
   padding: 0;
@@ -1178,7 +1188,8 @@ body {
   .vacation-table {
     font-size: 0.72rem;
   }
-  .vacation-table .col-name {
+  .vacation-table .col-name,
+  .vacation-table .col-total {
     position: static !important;
   }
   .vacation-table thead th {

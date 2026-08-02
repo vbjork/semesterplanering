@@ -569,17 +569,19 @@ function renderGrid() {
   const nav = document.createElement('div');
   nav.className = 'week-nav';
 
+  const step = viewSpan || 1;
+
   const leftBtn = document.createElement('button');
   leftBtn.className = 'week-nav-btn';
   leftBtn.textContent = '‹';
   leftBtn.disabled = viewSpan === null || viewStart <= startW;
-  leftBtn.addEventListener('click', () => { viewStart--; renderGrid(); });
+  leftBtn.addEventListener('click', () => { viewStart = Math.max(startW, viewStart - step); renderGrid(); });
 
   const rightBtn = document.createElement('button');
   rightBtn.className = 'week-nav-btn';
   rightBtn.textContent = '›';
   rightBtn.disabled = viewSpan === null || viewStart + viewSpan - 1 >= endW;
-  rightBtn.addEventListener('click', () => { viewStart++; renderGrid(); });
+  rightBtn.addEventListener('click', () => { viewStart = Math.min(endW - step + 1, viewStart + step); renderGrid(); });
 
   const spanLabel = document.createElement('span');
   spanLabel.className = 'week-nav-label';
@@ -778,6 +780,20 @@ yearSelect.addEventListener('change', async () => {
   await loadVacationPeriod();
   await loadAssignments();
   renderGrid();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (!vacationPeriod || viewSpan === null) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  const startW = vacationPeriod.start_week;
+  const endW = vacationPeriod.end_week;
+  if (e.key === 'ArrowLeft' && viewStart > startW) {
+    viewStart = Math.max(startW, viewStart - viewSpan);
+    renderGrid();
+  } else if (e.key === 'ArrowRight' && viewStart + viewSpan - 1 < endW) {
+    viewStart = Math.min(endW - viewSpan + 1, viewStart + viewSpan);
+    renderGrid();
+  }
 });
 
 // Export to Excel
