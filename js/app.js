@@ -486,6 +486,20 @@ async function rejectRequest(requestId, employeeId, week, day) {
   renderGrid();
 }
 
+const requestModal = document.getElementById('request-modal');
+const requestModalText = document.getElementById('request-modal-text');
+const approveRequestBtn = document.getElementById('approve-request-btn');
+const rejectRequestBtn = document.getElementById('reject-request-btn');
+document.getElementById('close-request-modal').addEventListener('click', () => requestModal.classList.add('hidden'));
+requestModal.addEventListener('click', (e) => { if (e.target === requestModal) requestModal.classList.add('hidden'); });
+
+function showRequestModal(empName, leaveType, week, dayName, requestId, empId, dayNum, category) {
+  requestModalText.innerHTML = '<strong>' + empName + '</strong> ansöker om <strong>' + leaveType + '</strong><br>Vecka ' + week + ', ' + dayName;
+  approveRequestBtn.onclick = () => { requestModal.classList.add('hidden'); approveRequest(requestId, empId, week, dayNum, category); };
+  rejectRequestBtn.onclick = () => { requestModal.classList.add('hidden'); rejectRequest(requestId, empId, week, dayNum); };
+  requestModal.classList.remove('hidden');
+}
+
 // Assignments
 async function loadAssignments() {
   if (employees.length === 0) { assignments = {}; return; }
@@ -760,13 +774,7 @@ function renderGrid() {
           td.title = 'Ansökan: ' + getLeaveTypeName(request.category) + ' — klicka för att hantera';
           td.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (confirm(emp.name + ' ansöker om ' + getLeaveTypeName(request.category) + ' V' + w + ' ' + DAY_NAMES[d-1] + '.\n\nGodkänn?')) {
-              approveRequest(request.id, emp.id, w, d, request.category);
-            } else {
-              if (confirm('Neka ansökan?')) {
-                rejectRequest(request.id, emp.id, w, d);
-              }
-            }
+            showRequestModal(emp.name, getLeaveTypeName(request.category), w, DAY_NAMES[d-1], request.id, emp.id, d, request.category);
           });
         }
 
