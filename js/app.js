@@ -690,6 +690,7 @@ function renderGrid() {
         }
 
         td.addEventListener('mousedown', (e) => {
+          if (e.button !== 0) return;
           e.preventDefault();
           handleDragStart(td, emp.id, w, d);
         });
