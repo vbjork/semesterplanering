@@ -57,6 +57,7 @@
           </div>
         </div>
         <button id="dashboard-btn" class="topbar-btn">Översikt</button>
+        <button id="log-btn" class="topbar-btn">Logg</button>
         <button id="settings-btn" class="topbar-btn">Inställningar</button>
         <button id="admin-btn" class="topbar-btn hidden">Admin</button>
         <span id="user-email" class="topbar-email"></span>
@@ -160,6 +161,18 @@
             <button id="save-note-btn" class="ds-btn ds-btn-primary" style="flex:1;">Spara</button>
             <button id="delete-note-btn" class="ds-btn ds-btn-danger" style="flex:1;">Ta bort</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="log-overlay" class="overlay hidden">
+      <div class="panel" style="width:500px;">
+        <div class="panel-header">
+          <span class="panel-title">Ändringslogg</span>
+          <button id="close-log" class="panel-close">&times;</button>
+        </div>
+        <div class="panel-body">
+          <div id="log-list" class="log-list"></div>
         </div>
       </div>
     </div>

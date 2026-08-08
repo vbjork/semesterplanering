@@ -456,6 +456,9 @@ async function loadAssignments() {
 
 async function setAssignment(employeeId, weekNumber, dayNumber, category) {
   const key = employeeId + '_' + weekNumber + '_' + dayNumber;
+  const emp = employees.find(e => e.id === employeeId);
+  const empName = emp ? emp.name : '?';
+  const oldCat = assignments[key] ? assignments[key].category : null;
 
   if (assignments[key]) {
     await db.from('vacation_assignments').delete().eq('id', assignments[key].id);
@@ -479,6 +482,27 @@ async function setAssignment(employeeId, weekNumber, dayNumber, category) {
       assignments[key] = { id: data.id, category: data.category };
     }
   }
+
+  logActivity(empName, weekNumber, dayNumber, oldCat, category);
+}
+
+async function logActivity(empName, week, day, oldCategory, newCategory) {
+  const dayNames = ['', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'];
+  let description;
+  if (oldCategory !== null && newCategory !== null) {
+    description = empName + ': ändrade V' + week + ' ' + dayNames[day] + ' från ' + getLeaveTypeName(oldCategory) + ' till ' + getLeaveTypeName(newCategory);
+  } else if (newCategory !== null) {
+    description = empName + ': la till ' + getLeaveTypeName(newCategory) + ' V' + week + ' ' + dayNames[day];
+  } else {
+    description = empName + ': tog bort ' + getLeaveTypeName(oldCategory) + ' V' + week + ' ' + dayNames[day];
+  }
+  const { data: { session } } = await db.auth.getSession();
+  await db.from('activity_log').insert({
+    user_id: session.user.id,
+    year: currentYear,
+    group_id: currentGroupId,
+    description: description
+  });
 }
 
 // Drag handling
@@ -686,7 +710,10 @@ function renderGrid() {
         const noteKey = emp.id + '_' + w + '_' + d;
         if (cellNotes[noteKey]) {
           td.classList.add('has-note');
-          td.title = (td.title ? td.title + '\n' : '') + '📝 ' + cellNotes[noteKey].note;
+          const noteTooltip = document.createElement('div');
+          noteTooltip.className = 'note-tooltip';
+          noteTooltip.textContent = cellNotes[noteKey].note;
+          td.appendChild(noteTooltip);
         }
 
         td.addEventListener('mousedown', (e) => {
@@ -1046,6 +1073,51 @@ noteText.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveNote(); }
   if (e.key === 'Escape') noteModal.classList.add('hidden');
 });
+
+// Activity log
+const logOverlay = document.getElementById('log-overlay');
+const logBtn = document.getElementById('log-btn');
+const closeLog = document.getElementById('close-log');
+const logList = document.getElementById('log-list');
+
+logBtn.addEventListener('click', () => {
+  logOverlay.classList.remove('hidden');
+  loadActivityLog();
+});
+closeLog.addEventListener('click', () => logOverlay.classList.add('hidden'));
+logOverlay.addEventListener('click', (e) => {
+  if (e.target === logOverlay) logOverlay.classList.add('hidden');
+});
+
+async function loadActivityLog() {
+  logList.innerHTML = '<p style="color:var(--color-text-muted)">Laddar...</p>';
+  const { data, error } = await db
+    .from('activity_log')
+    .select('*')
+    .eq('group_id', currentGroupId)
+    .eq('year', currentYear)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (error || !data) {
+    logList.innerHTML = '<p style="color:var(--color-text-muted)">Kunde inte ladda loggen.</p>';
+    return;
+  }
+  if (data.length === 0) {
+    logList.innerHTML = '<p style="color:var(--color-text-muted)">Inga ändringar ännu.</p>';
+    return;
+  }
+
+  logList.innerHTML = '';
+  data.forEach(entry => {
+    const item = document.createElement('div');
+    item.className = 'log-item';
+    const time = new Date(entry.created_at);
+    const timeStr = time.toLocaleDateString('sv-SE') + ' ' + time.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+    item.innerHTML = '<span class="log-time">' + timeStr + '</span><span class="log-desc">' + entry.description + '</span>';
+    logList.appendChild(item);
+  });
+}
 
 async function loadApp() {
   if (appLoaded) return;
