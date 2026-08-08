@@ -9,6 +9,7 @@ let activeColor = 0;
 let leaveTypes = {};
 let viewSpan = null;
 let viewStart = null;
+let pendingRequests = {};
 
 const DAY_NAMES = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
 
@@ -341,6 +342,7 @@ async function switchGroup(id) {
   updateCurrentGroupName();
   await loadEmployees();
   await loadAssignments();
+  await loadRequests();
   await loadNotes();
   renderGrid();
 }
@@ -425,6 +427,21 @@ function renderEmployeeList() {
     nameSpan.className = 'employee-name';
     nameSpan.textContent = emp.name;
     li.appendChild(nameSpan);
+    const btnWrap = document.createElement('span');
+    btnWrap.className = 'emp-actions';
+    if (emp.request_token) {
+      const linkBtn = document.createElement('button');
+      linkBtn.className = 'link-btn';
+      linkBtn.title = 'Kopiera ansökningslänk';
+      linkBtn.textContent = '🔗';
+      linkBtn.addEventListener('click', () => {
+        const url = window.location.origin + window.location.pathname.replace('index.html', '') + 'request.html?token=' + emp.request_token;
+        navigator.clipboard.writeText(url);
+        linkBtn.textContent = '✓';
+        setTimeout(() => { linkBtn.textContent = '🔗'; }, 1500);
+      });
+      btnWrap.appendChild(linkBtn);
+    }
     const delBtn = document.createElement('button');
     delBtn.className = 'delete-btn';
     delBtn.title = 'Ta bort';
@@ -432,9 +449,41 @@ function renderEmployeeList() {
     delBtn.addEventListener('click', () => {
       if (confirm('Ta bort ' + emp.name + '?')) deleteEmployee(emp.id);
     });
-    li.appendChild(delBtn);
+    btnWrap.appendChild(delBtn);
+    li.appendChild(btnWrap);
     employeeList.appendChild(li);
   });
+}
+
+// Requests
+async function loadRequests() {
+  if (employees.length === 0) { pendingRequests = {}; return; }
+  const employeeIds = employees.map(e => e.id);
+  const { data } = await db
+    .from('vacation_requests')
+    .select('*')
+    .in('employee_id', employeeIds)
+    .eq('year', currentYear)
+    .eq('status', 'pending');
+
+  pendingRequests = {};
+  (data || []).forEach(r => {
+    const key = r.employee_id + '_' + r.week_number + '_' + r.day_number;
+    pendingRequests[key] = { id: r.id, category: r.category || 0 };
+  });
+}
+
+async function approveRequest(requestId, employeeId, week, day, category) {
+  await db.from('vacation_requests').update({ status: 'approved' }).eq('id', requestId);
+  await setAssignment(employeeId, week, day, category);
+  delete pendingRequests[employeeId + '_' + week + '_' + day];
+  renderGrid();
+}
+
+async function rejectRequest(requestId, employeeId, week, day) {
+  await db.from('vacation_requests').update({ status: 'rejected' }).eq('id', requestId);
+  delete pendingRequests[employeeId + '_' + week + '_' + day];
+  renderGrid();
 }
 
 // Assignments
@@ -699,12 +748,26 @@ function renderGrid() {
 
         const key = emp.id + '_' + w + '_' + d;
         const assignment = assignments[key];
+        const request = pendingRequests[key];
         if (assignment) {
           td.classList.add('active');
           td.style.background = COLORS[assignment.category].bg;
           td.title = getLeaveTypeName(assignment.category);
           totalDays++;
           categoryCounts[assignment.category] = (categoryCounts[assignment.category] || 0) + 1;
+        } else if (request) {
+          td.classList.add('pending-request');
+          td.title = 'Ansökan: ' + getLeaveTypeName(request.category) + ' — klicka för att hantera';
+          td.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(emp.name + ' ansöker om ' + getLeaveTypeName(request.category) + ' V' + w + ' ' + DAY_NAMES[d-1] + '.\n\nGodkänn?')) {
+              approveRequest(request.id, emp.id, w, d, request.category);
+            } else {
+              if (confirm('Neka ansökan?')) {
+                rejectRequest(request.id, emp.id, w, d);
+              }
+            }
+          });
         }
 
         const noteKey = emp.id + '_' + w + '_' + d;
@@ -1131,6 +1194,7 @@ async function loadApp() {
   await loadVacationPeriod();
   await loadEmployees();
   await loadAssignments();
+  await loadRequests();
   await loadNotes();
   renderGrid();
 }

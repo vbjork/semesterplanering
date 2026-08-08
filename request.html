@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ansök om semester</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .req-header {
+      background: var(--color-primary);
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .req-header h1 { font-size: 1.1rem; font-weight: 700; }
+    .req-header .req-name { font-size: 0.9rem; opacity: 0.85; }
+    .req-body { padding: 16px 24px; }
+    .req-legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+    }
+    .req-legend-item { display: flex; align-items: center; gap: 5px; }
+    .req-legend-dot {
+      width: 14px; height: 14px; border-radius: 4px;
+      border: 1px solid rgba(0,0,0,.1);
+    }
+    .req-legend-dot.pending {
+      background: repeating-linear-gradient(45deg, #6366f1 0, #6366f1 3px, #818cf8 3px, #818cf8 6px);
+    }
+    .req-msg {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--color-text-muted);
+      font-size: 1rem;
+    }
+    .req-status {
+      margin-top: 12px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      display: none;
+    }
+    .req-status.success { display: block; background: var(--color-success-light); color: var(--color-success-dark); }
+    .req-status.error { display: block; background: var(--color-error-light); color: var(--color-error); }
+
+    .vacation-table .day-cell.request-pending {
+      background: repeating-linear-gradient(45deg, #c7d2fe 0, #c7d2fe 3px, #e0e7ff 3px, #e0e7ff 6px) !important;
+      cursor: pointer;
+    }
+    .vacation-table .day-cell.request-pending:hover {
+      filter: brightness(0.9);
+    }
+    .vacation-table .day-cell.request-approved {
+      opacity: 0.7;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <div id="request-app">
+    <div class="req-header">
+      <h1>Ansök om semester</h1>
+      <span class="req-name" id="req-emp-name"></span>
+    </div>
+    <div class="req-body">
+      <div class="req-legend">
+        <div class="req-legend-item"><div class="req-legend-dot" style="background:#b6e2c8;"></div> Godkänd</div>
+        <div class="req-legend-item"><div class="req-legend-dot pending"></div> Din ansökan</div>
+        <div class="req-legend-item"><div class="req-legend-dot" style="background:#eaecf0;"></div> Klicka för att ansöka</div>
+      </div>
+      <div id="req-grid"></div>
+      <div id="req-status" class="req-status"></div>
+    </div>
+    <div id="req-error" class="req-msg" style="display:none;"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/request.js"></script>
+</body>
+</html>
