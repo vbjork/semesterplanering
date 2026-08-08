@@ -781,6 +781,7 @@ function renderGrid() {
 
         td.addEventListener('mousedown', (e) => {
           if (e.button !== 0) return;
+          if (pendingRequests[key]) return;
           e.preventDefault();
           handleDragStart(td, emp.id, w, d);
         });
