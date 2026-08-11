@@ -675,17 +675,6 @@ function renderGrid() {
   spanLabel.className = 'week-nav-label';
   if (pendingWeekPick !== null) {
     spanLabel.textContent = 'Klicka på slutvecka för intervallet (startar på V' + pendingWeekPick + ')';
-  } else if (viewSpan === null) {
-    spanLabel.textContent = 'V' + startW + '–V' + endW;
-  } else {
-    const rangeChip = document.createElement('span');
-    rangeChip.className = 'week-nav-range-chip';
-    rangeChip.textContent = 'V' + weeks[0] + '–V' + weeks[weeks.length - 1];
-    const rangeContext = document.createElement('span');
-    rangeContext.className = 'week-nav-range-context';
-    rangeContext.textContent = 'av V' + startW + '–V' + endW;
-    spanLabel.appendChild(rangeChip);
-    spanLabel.appendChild(rangeContext);
   }
 
   const makeZoom = (label, span) => {
