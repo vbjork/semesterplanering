@@ -10,6 +10,7 @@ let leaveTypes = {};
 let viewSpan = null;
 let viewStart = null;
 let pendingRequests = {};
+let pendingWeekPick = null;
 
 const DAY_NAMES = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
 
@@ -672,15 +673,18 @@ function renderGrid() {
 
   const spanLabel = document.createElement('span');
   spanLabel.className = 'week-nav-label';
-  spanLabel.textContent = viewSpan === null
-    ? 'V' + startW + '–V' + endW
-    : 'V' + weeks[0] + '–V' + weeks[weeks.length - 1] + ' av V' + startW + '–V' + endW;
+  spanLabel.textContent = pendingWeekPick !== null
+    ? 'Klicka på slutvecka för intervallet (startar på V' + pendingWeekPick + ')'
+    : viewSpan === null
+      ? 'V' + startW + '–V' + endW
+      : 'V' + weeks[0] + '–V' + weeks[weeks.length - 1] + ' av V' + startW + '–V' + endW;
 
   const makeZoom = (label, span) => {
     const btn = document.createElement('button');
-    btn.className = 'week-nav-zoom' + (viewSpan === span ? ' active' : '');
+    btn.className = 'week-nav-zoom' + (viewSpan === span && pendingWeekPick === null ? ' active' : '');
     btn.textContent = label;
     btn.addEventListener('click', () => {
+      pendingWeekPick = null;
       viewSpan = span;
       if (viewSpan !== null && viewSpan >= totalWeeks) viewSpan = null;
       renderGrid();
@@ -714,9 +718,28 @@ function renderGrid() {
 
   weeks.forEach(w => {
     const th = document.createElement('th');
-    th.className = 'col-week-group';
+    th.className = 'col-week-group col-week-pickable';
+    if (pendingWeekPick === w) th.classList.add('picking');
     th.colSpan = 7;
     th.textContent = 'V' + w;
+    th.title = pendingWeekPick === null
+      ? 'Klicka för att välja startvecka'
+      : 'Klicka för att välja slutvecka (klicka samma vecka igen för att avmarkera)';
+    th.addEventListener('click', () => {
+      if (pendingWeekPick === null) {
+        pendingWeekPick = w;
+      } else if (pendingWeekPick === w) {
+        pendingWeekPick = null;
+      } else {
+        const rangeStart = Math.min(pendingWeekPick, w);
+        const rangeEnd = Math.max(pendingWeekPick, w);
+        pendingWeekPick = null;
+        viewStart = rangeStart;
+        viewSpan = rangeEnd - rangeStart + 1;
+        if (viewSpan >= totalWeeks) viewSpan = null;
+      }
+      renderGrid();
+    });
     weekRow.appendChild(th);
   });
 
