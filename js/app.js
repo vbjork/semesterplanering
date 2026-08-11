@@ -673,11 +673,20 @@ function renderGrid() {
 
   const spanLabel = document.createElement('span');
   spanLabel.className = 'week-nav-label';
-  spanLabel.textContent = pendingWeekPick !== null
-    ? 'Klicka på slutvecka för intervallet (startar på V' + pendingWeekPick + ')'
-    : viewSpan === null
-      ? 'V' + startW + '–V' + endW
-      : 'V' + weeks[0] + '–V' + weeks[weeks.length - 1] + ' av V' + startW + '–V' + endW;
+  if (pendingWeekPick !== null) {
+    spanLabel.textContent = 'Klicka på slutvecka för intervallet (startar på V' + pendingWeekPick + ')';
+  } else if (viewSpan === null) {
+    spanLabel.textContent = 'V' + startW + '–V' + endW;
+  } else {
+    const rangeChip = document.createElement('span');
+    rangeChip.className = 'week-nav-range-chip';
+    rangeChip.textContent = 'V' + weeks[0] + '–V' + weeks[weeks.length - 1];
+    const rangeContext = document.createElement('span');
+    rangeContext.className = 'week-nav-range-context';
+    rangeContext.textContent = 'av V' + startW + '–V' + endW;
+    spanLabel.appendChild(rangeChip);
+    spanLabel.appendChild(rangeContext);
+  }
 
   const makeZoom = (label, span) => {
     const btn = document.createElement('button');
@@ -693,8 +702,8 @@ function renderGrid() {
   };
 
   nav.appendChild(leftBtn);
-  nav.appendChild(makeZoom('4v', 4));
-  nav.appendChild(makeZoom('8v', 8));
+  nav.appendChild(makeZoom('4 veckor', 4));
+  nav.appendChild(makeZoom('8 veckor', 8));
   nav.appendChild(makeZoom('Alla', null));
   nav.appendChild(spanLabel);
   nav.appendChild(rightBtn);

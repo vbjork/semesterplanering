@@ -774,6 +774,20 @@ body {
   color: var(--color-text-muted);
   font-weight: 500;
 }
+.week-nav-range-chip {
+  background: var(--color-primary-lighter);
+  color: var(--color-primary-dark);
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-md);
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.week-nav-range-context {
+  font-size: 0.78rem;
+  color: var(--color-text-faint);
+  margin-left: 6px;
+}
 
 .vacation-table {
   width: 100%;
