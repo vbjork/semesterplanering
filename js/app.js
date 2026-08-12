@@ -11,6 +11,8 @@ let viewSpan = null;
 let viewStart = null;
 let pendingRequests = {};
 let rejectedRequests = {};
+let jourAssignments = {};
+let jourMode = false;
 let pendingWeekPick = null;
 
 const DAY_NAMES = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
@@ -56,6 +58,7 @@ const addGroupBtn = document.getElementById('add-group-btn');
 const periodBadge = document.getElementById('period-badge');
 const currentGroupNameEl = document.getElementById('current-group-name');
 const colorPalette = document.getElementById('color-palette');
+const jourToggleBtn = document.getElementById('jour-toggle-btn');
 const leaveTypeList = document.getElementById('leave-type-list');
 const exportBtn = document.getElementById('export-btn');
 const dashboardBtn = document.getElementById('dashboard-btn');
@@ -103,6 +106,44 @@ function renderColorPalette() {
   label.className = 'color-label';
   label.textContent = getLeaveTypeName(activeColor);
   colorPalette.appendChild(label);
+}
+
+// Jour
+jourToggleBtn.addEventListener('click', () => {
+  jourMode = !jourMode;
+  jourToggleBtn.classList.toggle('active', jourMode);
+});
+
+async function loadJourAssignments() {
+  if (employees.length === 0) { jourAssignments = {}; return; }
+  const employeeIds = employees.map(e => e.id);
+  const { data } = await db
+    .from('jour_assignments')
+    .select('*')
+    .in('employee_id', employeeIds)
+    .eq('year', currentYear);
+
+  jourAssignments = {};
+  (data || []).forEach(j => {
+    jourAssignments[j.employee_id + '_' + j.week_number + '_' + j.day_number] = j.id;
+  });
+}
+
+async function setJour(employeeId, week, day, active) {
+  const key = employeeId + '_' + week + '_' + day;
+  if (active) {
+    if (jourAssignments[key]) return;
+    const { data, error } = await db
+      .from('jour_assignments')
+      .insert({ employee_id: employeeId, year: currentYear, week_number: week, day_number: day })
+      .select()
+      .single();
+    if (!error) jourAssignments[key] = data.id;
+  } else {
+    if (!jourAssignments[key]) return;
+    await db.from('jour_assignments').delete().eq('id', jourAssignments[key]);
+    delete jourAssignments[key];
+  }
 }
 
 // Leave types
@@ -346,6 +387,7 @@ async function switchGroup(id) {
   await loadAssignments();
   await loadRequests();
   await loadNotes();
+  await loadJourAssignments();
   renderGrid();
 }
 
@@ -593,7 +635,7 @@ async function logActivity(empName, week, day, oldCategory, newCategory) {
 function handleDragStart(td, employeeId, week, day) {
   isDragging = true;
   const key = employeeId + '_' + week + '_' + day;
-  dragMode = assignments[key] ? 'remove' : 'add';
+  dragMode = (jourMode ? jourAssignments[key] : assignments[key]) ? 'remove' : 'add';
   dragCells = [{ td, employeeId, week, day }];
   applyDragPreview(td);
 }
@@ -607,6 +649,11 @@ function handleDragEnter(td, employeeId, week, day) {
 }
 
 function applyDragPreview(td) {
+  if (jourMode) {
+    td.style.outline = dragMode === 'add' ? '2px solid var(--color-primary)' : '2px solid var(--color-error)';
+    td.style.outlineOffset = '-2px';
+    return;
+  }
   if (dragMode === 'add') {
     td.style.background = COLORS[activeColor].bg;
     td.style.opacity = '0.6';
@@ -623,8 +670,11 @@ async function handleDragEnd() {
   for (const cell of dragCells) {
     cell.td.style.opacity = '';
     cell.td.style.background = '';
+    cell.td.style.outline = '';
 
-    if (dragMode === 'add') {
+    if (jourMode) {
+      await setJour(cell.employeeId, cell.week, cell.day, dragMode === 'add');
+    } else if (dragMode === 'add') {
       await setAssignment(cell.employeeId, cell.week, cell.day, activeColor);
     } else {
       await setAssignment(cell.employeeId, cell.week, cell.day, null);
@@ -805,6 +855,11 @@ function renderGrid() {
         const assignment = assignments[key];
         const request = pendingRequests[key];
         const rejected = rejectedRequests[key];
+
+        if (jourAssignments[key]) {
+          td.classList.add('jour-cell');
+        }
+
         if (assignment) {
           td.classList.add('active');
           td.style.background = COLORS[assignment.category].bg;
@@ -825,6 +880,10 @@ function renderGrid() {
             e.stopPropagation();
             showRequestModal(emp.name, getLeaveTypeName(rejected.category), w, DAY_NAMES[d-1], rejected.id, emp.id, d, rejected.category, true);
           });
+        }
+
+        if (jourAssignments[key]) {
+          td.title = (td.title ? td.title + ' — ' : '') + 'Jour';
         }
 
         const noteKey = emp.id + '_' + w + '_' + d;
@@ -1254,5 +1313,6 @@ async function loadApp() {
   await loadAssignments();
   await loadRequests();
   await loadNotes();
+  await loadJourAssignments();
   renderGrid();
 }
