@@ -649,15 +649,15 @@ body {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 16px;
 }
 .jour-toggle-btn {
   padding: 6px 14px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border: 2px solid #f0a8a8;
   background: var(--color-bg-input);
-  color: var(--color-text-muted);
+  color: #b45454;
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
@@ -666,13 +666,12 @@ body {
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .jour-toggle-btn:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: #fdecec;
 }
 .jour-toggle-btn.active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
+  background: #fdecec;
+  border-color: #e08a8a;
+  color: #a83a3a;
 }
 .color-palette {
   display: flex;
@@ -1079,13 +1078,8 @@ body {
 }
 
 /* Jour */
-.day-cell.jour-cell::before {
-  content: '📞';
-  position: absolute;
-  bottom: 1px;
-  left: 2px;
-  font-size: 9px;
-  line-height: 1;
+.day-cell.jour-cell {
+  box-shadow: inset 0 0 0 2px #f0a8a8;
 }
 
 /* Pending requests */

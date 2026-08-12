@@ -650,7 +650,7 @@ function handleDragEnter(td, employeeId, week, day) {
 
 function applyDragPreview(td) {
   if (jourMode) {
-    td.style.outline = dragMode === 'add' ? '2px solid var(--color-primary)' : '2px solid var(--color-error)';
+    td.style.outline = dragMode === 'add' ? '2px solid #f0a8a8' : '2px solid var(--color-text-ghost)';
     td.style.outlineOffset = '-2px';
     return;
   }
