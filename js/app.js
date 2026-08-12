@@ -10,6 +10,7 @@ let leaveTypes = {};
 let viewSpan = null;
 let viewStart = null;
 let pendingRequests = {};
+let rejectedRequests = {};
 let pendingWeekPick = null;
 
 const DAY_NAMES = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
@@ -458,19 +459,22 @@ function renderEmployeeList() {
 
 // Requests
 async function loadRequests() {
-  if (employees.length === 0) { pendingRequests = {}; return; }
+  if (employees.length === 0) { pendingRequests = {}; rejectedRequests = {}; return; }
   const employeeIds = employees.map(e => e.id);
   const { data } = await db
     .from('vacation_requests')
     .select('*')
     .in('employee_id', employeeIds)
     .eq('year', currentYear)
-    .eq('status', 'pending');
+    .in('status', ['pending', 'rejected']);
 
   pendingRequests = {};
+  rejectedRequests = {};
   (data || []).forEach(r => {
     const key = r.employee_id + '_' + r.week_number + '_' + r.day_number;
-    pendingRequests[key] = { id: r.id, category: r.category || 0 };
+    const entry = { id: r.id, category: r.category || 0 };
+    if (r.status === 'pending') pendingRequests[key] = entry;
+    else rejectedRequests[key] = entry;
   });
 }
 
@@ -478,12 +482,20 @@ async function approveRequest(requestId, employeeId, week, day, category) {
   await db.from('vacation_requests').update({ status: 'approved' }).eq('id', requestId);
   await setAssignment(employeeId, week, day, category);
   delete pendingRequests[employeeId + '_' + week + '_' + day];
+  delete rejectedRequests[employeeId + '_' + week + '_' + day];
   renderGrid();
 }
 
-async function rejectRequest(requestId, employeeId, week, day) {
+async function rejectRequest(requestId, employeeId, week, day, category) {
   await db.from('vacation_requests').update({ status: 'rejected' }).eq('id', requestId);
   delete pendingRequests[employeeId + '_' + week + '_' + day];
+  rejectedRequests[employeeId + '_' + week + '_' + day] = { id: requestId, category: category || 0 };
+  renderGrid();
+}
+
+async function removeRejectedRequest(requestId, employeeId, week, day) {
+  await db.from('vacation_requests').delete().eq('id', requestId);
+  delete rejectedRequests[employeeId + '_' + week + '_' + day];
   renderGrid();
 }
 
@@ -494,10 +506,18 @@ const rejectRequestBtn = document.getElementById('reject-request-btn');
 document.getElementById('close-request-modal').addEventListener('click', () => requestModal.classList.add('hidden'));
 requestModal.addEventListener('click', (e) => { if (e.target === requestModal) requestModal.classList.add('hidden'); });
 
-function showRequestModal(empName, leaveType, week, dayName, requestId, empId, dayNum, category) {
-  requestModalText.innerHTML = '<strong>' + empName + '</strong> ansöker om <strong>' + leaveType + '</strong><br>Vecka ' + week + ', ' + dayName;
+function showRequestModal(empName, leaveType, week, dayName, requestId, empId, dayNum, category, isRejected) {
+  requestModalText.innerHTML = isRejected
+    ? '<strong>' + empName + '</strong> ansökte om <strong>' + leaveType + '</strong><br>Vecka ' + week + ', ' + dayName + '<br><span style="color:var(--color-error);">Nekad</span>'
+    : '<strong>' + empName + '</strong> ansöker om <strong>' + leaveType + '</strong><br>Vecka ' + week + ', ' + dayName;
   approveRequestBtn.onclick = () => { requestModal.classList.add('hidden'); approveRequest(requestId, empId, week, dayNum, category); };
-  rejectRequestBtn.onclick = () => { requestModal.classList.add('hidden'); rejectRequest(requestId, empId, week, dayNum); };
+  if (isRejected) {
+    rejectRequestBtn.textContent = 'Ta bort';
+    rejectRequestBtn.onclick = () => { requestModal.classList.add('hidden'); removeRejectedRequest(requestId, empId, week, dayNum); };
+  } else {
+    rejectRequestBtn.textContent = 'Neka';
+    rejectRequestBtn.onclick = () => { requestModal.classList.add('hidden'); rejectRequest(requestId, empId, week, dayNum, category); };
+  }
   requestModal.classList.remove('hidden');
 }
 
@@ -784,6 +804,7 @@ function renderGrid() {
         const key = emp.id + '_' + w + '_' + d;
         const assignment = assignments[key];
         const request = pendingRequests[key];
+        const rejected = rejectedRequests[key];
         if (assignment) {
           td.classList.add('active');
           td.style.background = COLORS[assignment.category].bg;
@@ -795,7 +816,14 @@ function renderGrid() {
           td.title = 'Ansökan: ' + getLeaveTypeName(request.category) + ' — klicka för att hantera';
           td.addEventListener('click', (e) => {
             e.stopPropagation();
-            showRequestModal(emp.name, getLeaveTypeName(request.category), w, DAY_NAMES[d-1], request.id, emp.id, d, request.category);
+            showRequestModal(emp.name, getLeaveTypeName(request.category), w, DAY_NAMES[d-1], request.id, emp.id, d, request.category, false);
+          });
+        } else if (rejected) {
+          td.classList.add('rejected-request');
+          td.title = 'Nekad ansökan: ' + getLeaveTypeName(rejected.category) + ' — klicka för att hantera';
+          td.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showRequestModal(emp.name, getLeaveTypeName(rejected.category), w, DAY_NAMES[d-1], rejected.id, emp.id, d, rejected.category, true);
           });
         }
 
@@ -810,7 +838,7 @@ function renderGrid() {
 
         td.addEventListener('mousedown', (e) => {
           if (e.button !== 0) return;
-          if (pendingRequests[key]) return;
+          if (pendingRequests[key] || rejectedRequests[key]) return;
           e.preventDefault();
           handleDragStart(td, emp.id, w, d);
         });

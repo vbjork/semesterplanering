@@ -1062,6 +1062,16 @@ body {
   filter: brightness(0.85);
 }
 
+/* Rejected requests */
+.day-cell.rejected-request {
+  background: repeating-linear-gradient(45deg, #fecaca 0, #fecaca 3px, #fee2e2 3px, #fee2e2 6px) !important;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.day-cell.rejected-request:hover {
+  filter: brightness(0.85);
+}
+
 /* Employee actions in settings */
 .emp-actions {
   display: flex;
