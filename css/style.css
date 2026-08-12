@@ -1081,6 +1081,15 @@ body {
 .day-cell.jour-cell {
   box-shadow: inset 0 0 0 2px #f0a8a8;
 }
+.day-cell.jour-cluster-single {
+  border-radius: 6px;
+}
+.day-cell.jour-cluster-start {
+  border-radius: 6px 0 0 6px;
+}
+.day-cell.jour-cluster-end {
+  border-radius: 0 6px 6px 0;
+}
 
 /* Pending requests */
 .day-cell.pending-request {

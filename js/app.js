@@ -921,6 +921,15 @@ function renderGrid() {
       else if (!next) dayCells[i].classList.add('cluster-end');
     }
 
+    for (let i = 0; i < dayCells.length; i++) {
+      if (!dayCells[i].classList.contains('jour-cell')) continue;
+      const prev = i > 0 && dayCells[i - 1].classList.contains('jour-cell');
+      const next = i < dayCells.length - 1 && dayCells[i + 1].classList.contains('jour-cell');
+      if (!prev && !next) dayCells[i].classList.add('jour-cluster-single');
+      else if (!prev) dayCells[i].classList.add('jour-cluster-start');
+      else if (!next) dayCells[i].classList.add('jour-cluster-end');
+    }
+
     const totalCell = document.createElement('td');
     totalCell.className = 'col-total emp-total';
     totalCell.textContent = totalDays;
