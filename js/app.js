@@ -789,10 +789,18 @@ function renderGrid() {
     th.className = 'col-week-group col-week-pickable';
     if (pendingWeekPick === w) th.classList.add('picking');
     th.colSpan = 7;
-    th.textContent = 'V' + w;
-    th.title = pendingWeekPick === null
+    const weekLabel = document.createElement('span');
+    weekLabel.className = 'col-week-label';
+    weekLabel.textContent = 'V' + w;
+    const weekDates = document.createElement('span');
+    weekDates.className = 'col-week-dates';
+    weekDates.textContent = weekRangeLabel(currentYear, w);
+    th.appendChild(weekLabel);
+    th.appendChild(weekDates);
+    const pickHint = pendingWeekPick === null
       ? 'Klicka för att välja startvecka'
       : 'Klicka för att välja slutvecka (klicka samma vecka igen för att avmarkera)';
+    th.title = pickHint + ' — ' + weekRangeLabel(currentYear, w);
     th.addEventListener('click', () => {
       if (pendingWeekPick === null) {
         pendingWeekPick = w;
@@ -820,11 +828,10 @@ function renderGrid() {
   thead.appendChild(weekRow);
 
   const dayRow = document.createElement('tr');
-  weeks.forEach(() => {
-    DAY_NAMES.forEach(d => {
+  weeks.forEach(w => {
+    DAY_NAMES.forEach((d, i) => {
       const th = document.createElement('th');
-      th.className = 'col-day';
-      th.textContent = d;
+      fillDayHeader(th, d, dayColumnInfo(currentYear, w, i + 1));
       dayRow.appendChild(th);
     });
   });
@@ -838,7 +845,10 @@ function renderGrid() {
 
     const nameCell = document.createElement('td');
     nameCell.className = 'col-name';
-    nameCell.textContent = emp.name;
+    const nameText = document.createElement('span');
+    nameText.className = 'col-name-text';
+    nameText.textContent = emp.name;
+    nameCell.appendChild(nameText);
     row.appendChild(nameCell);
 
     let totalDays = 0;
@@ -885,6 +895,8 @@ function renderGrid() {
         if (jourAssignments[key]) {
           td.title = (td.title ? td.title + ' — ' : '') + 'Jour';
         }
+
+        markRedDayCell(td, dayColumnInfo(currentYear, w, d));
 
         const noteKey = emp.id + '_' + w + '_' + d;
         if (cellNotes[noteKey]) {
@@ -975,6 +987,11 @@ function renderGrid() {
       });
       td.textContent = count || '';
       if (count > 0) td.classList.add('has-count');
+      const summaryInfo = dayColumnInfo(currentYear, w, d);
+      if (summaryInfo.redName) {
+        td.classList.add('red-day');
+        td.title = summaryInfo.redName;
+      }
       summaryRow.appendChild(td);
     }
   });
@@ -1025,8 +1042,9 @@ function exportToExcel() {
   const header2 = [''];
   weeks.forEach(w => {
     DAY_NAMES.forEach((d, i) => {
-      header1.push(i === 0 ? 'V' + w : '');
-      header2.push(d);
+      const info = dayColumnInfo(currentYear, w, i + 1);
+      header1.push(i === 0 ? 'V' + w + ' ' + weekRangeLabel(currentYear, w) : '');
+      header2.push(d + ' ' + info.day + '/' + (info.date.getUTCMonth() + 1) + (info.redName ? ' ' + info.redName : ''));
     });
   });
   header1.push('Dagar');
@@ -1110,6 +1128,10 @@ exportPdfBtn.addEventListener('click', () => {
     item.innerHTML = '<span class="print-legend-dot" style="background:' + COLORS[cat].bg + '"></span>' + getLeaveTypeName(cat);
     legend.appendChild(item);
   });
+  const redItem = document.createElement('span');
+  redItem.className = 'print-legend-item';
+  redItem.innerHTML = '<span class="print-legend-dot" style="background:#fde8e8;border-color:#dc2626;"></span>Röd dag';
+  legend.appendChild(redItem);
 
   document.getElementById('print-date').textContent = 'Utskriven ' + new Date().toLocaleDateString('sv-SE');
   window.print();
