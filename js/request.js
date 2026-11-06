@@ -216,6 +216,9 @@ async function submitSelected() {
 }
 
 async function cancelRequest(week, day) {
+  const when = 'vecka ' + week + ' ' + ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag', 'söndag'][day - 1];
+  const ok = await askConfirm('Ta bort den skickade ansökan för ' + employee.name + ', ' + when + '?');
+  if (!ok) return;
   await db.rpc('cancel_vacation_request', {
     p_token: token, p_year: currentYear, p_week: week, p_day: day
   });
