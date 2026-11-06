@@ -21,6 +21,9 @@ let employee = null;
 let schedule = {};
 let requests = {};
 let leaveTypes = {};
+let period = null;
+let selected = new Set();
+let submitting = false;
 
 const reqGrid = document.getElementById('req-grid');
 const reqError = document.getElementById('req-error');
@@ -33,6 +36,7 @@ function getLeaveTypeName(index) {
 function showError(msg) {
   document.querySelector('.req-header').style.display = 'none';
   document.querySelector('.req-body').style.display = 'none';
+  document.getElementById('req-submit-bar').style.display = 'none';
   reqError.style.display = 'block';
   reqError.textContent = msg;
 }
@@ -66,115 +70,148 @@ async function loadData() {
   const { data: reqs } = await db.rpc('get_employee_requests', { p_token: token, p_year: currentYear });
   requests = {};
   if (reqs) reqs.forEach(r => { requests[r.week_number + '_' + r.day_number] = r.status; });
+
+  const { data: periodRows } = await db.rpc('get_vacation_period_by_token', { p_token: token, p_year: currentYear });
+  period = (periodRows && periodRows[0]) || null;
+
+  for (const key of [...selected]) {
+    if (schedule[key] !== undefined || requests[key]) selected.delete(key);
+  }
 }
 
-async function renderGrid() {
+function dayKey(week, day) {
+  return week + '_' + day;
+}
+
+function updateSubmitBar() {
+  const bar = document.getElementById('req-submit-bar');
+  const btn = document.getElementById('req-submit-btn');
+  const count = document.getElementById('req-submit-count');
+  if (!period) {
+    bar.hidden = true;
+    return;
+  }
+  bar.hidden = false;
+  const n = selected.size;
+  btn.disabled = n === 0 || submitting;
+  btn.textContent = submitting ? 'Skickar…' : 'Skicka ansökan';
+  count.textContent = n === 0 ? 'Inga dagar valda' : (n === 1 ? '1 dag vald' : n + ' dagar valda');
+}
+
+function toggleDay(week, day) {
+  const key = dayKey(week, day);
+  if (selected.has(key)) selected.delete(key);
+  else selected.add(key);
+  renderGrid();
+}
+
+function renderGrid() {
   reqGrid.innerHTML = '';
 
-  const { data: period } = await db.rpc('get_vacation_period_by_token', { p_token: token, p_year: currentYear });
-  if (!period || period.length === 0) {
+  if (!period) {
     reqGrid.innerHTML = '<p class="req-msg">Ingen semesterperiod har ställts in ännu.</p>';
+    updateSubmitBar();
     return;
   }
 
-  const startW = period[0].start_week;
-  const endW = period[0].end_week;
   const weeks = [];
-  for (let w = startW; w <= endW; w++) weeks.push(w);
+  for (let w = period.start_week; w <= period.end_week; w++) weeks.push(w);
 
-  const table = document.createElement('table');
-  table.className = 'vacation-table';
-
-  const thead = document.createElement('thead');
-  const weekRow = document.createElement('tr');
-  const nameHeader = document.createElement('th');
-  nameHeader.className = 'col-name';
-  nameHeader.textContent = employee.name;
-  nameHeader.rowSpan = 2;
-  weekRow.appendChild(nameHeader);
+  const list = document.createElement('div');
+  list.className = 'req-weeks';
 
   weeks.forEach(w => {
-    const th = document.createElement('th');
-    th.className = 'col-week-group';
-    th.colSpan = 7;
-    const weekLabel = document.createElement('span');
-    weekLabel.className = 'col-week-label';
-    weekLabel.textContent = 'V' + w;
+    const section = document.createElement('section');
+    section.className = 'req-week';
+
+    const head = document.createElement('div');
+    head.className = 'req-week-head';
+    const weekName = document.createElement('span');
+    weekName.textContent = 'Vecka ' + w;
     const weekDates = document.createElement('span');
-    weekDates.className = 'col-week-dates';
+    weekDates.className = 'req-week-dates';
     weekDates.textContent = weekRangeLabel(currentYear, w);
-    th.appendChild(weekLabel);
-    th.appendChild(weekDates);
-    th.title = weekRangeLabel(currentYear, w);
-    weekRow.appendChild(th);
-  });
-  thead.appendChild(weekRow);
+    head.appendChild(weekName);
+    head.appendChild(weekDates);
+    section.appendChild(head);
 
-  const dayRow = document.createElement('tr');
-  weeks.forEach(w => {
-    DAY_NAMES.forEach((d, i) => {
-      const th = document.createElement('th');
-      fillDayHeader(th, d, dayColumnInfo(currentYear, w, i + 1));
-      dayRow.appendChild(th);
-    });
-  });
-  thead.appendChild(dayRow);
-  table.appendChild(thead);
+    const days = document.createElement('div');
+    days.className = 'req-days';
 
-  const tbody = document.createElement('tbody');
-  const row = document.createElement('tr');
-  const nameCell = document.createElement('td');
-  nameCell.className = 'col-name';
-  const nameText = document.createElement('span');
-  nameText.className = 'col-name-text';
-  nameText.textContent = employee.name;
-  nameText.title = employee.name;
-  nameCell.appendChild(nameText);
-  row.appendChild(nameCell);
-
-  weeks.forEach(w => {
     for (let d = 1; d <= 7; d++) {
-      const td = document.createElement('td');
-      td.className = 'day-cell';
-      if (d === 6 || d === 7) td.classList.add('weekend');
+      const key = dayKey(w, d);
+      const info = dayColumnInfo(currentYear, w, d);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'req-day';
+      if (d >= 6) btn.classList.add('weekend');
+      if (info.redName) btn.classList.add('red-day');
 
-      const key = w + '_' + d;
+      const nameEl = document.createElement('span');
+      nameEl.className = 'req-day-name';
+      nameEl.textContent = DAY_NAMES[d - 1];
+      const numEl = document.createElement('span');
+      numEl.className = 'req-day-num';
+      numEl.textContent = info.dateLabel;
+      btn.appendChild(nameEl);
+      btn.appendChild(numEl);
 
-      if (schedule[key] !== undefined) {
-        td.classList.add('active');
-        td.style.background = COLORS[schedule[key]].bg;
-        td.title = getLeaveTypeName(schedule[key]) + ' (godkänd)';
+      const lockedApproved = schedule[key] !== undefined || requests[key] === 'approved';
+      if (lockedApproved) {
+        const category = schedule[key] !== undefined ? schedule[key] : 0;
+        btn.classList.add('approved');
+        btn.style.background = COLORS[category].bg;
+        btn.disabled = true;
+        btn.title = getLeaveTypeName(category) + ' (godkänd)';
       } else if (requests[key] === 'pending') {
-        td.classList.add('request-pending');
-        td.title = 'Din ansökan (väntande)';
-        td.addEventListener('click', () => cancelRequest(w, d));
-      } else if (requests[key] === 'approved') {
-        td.classList.add('active', 'request-approved');
-        td.style.background = COLORS[0].bg;
-        td.title = 'Godkänd';
+        btn.classList.add('pending');
+        btn.title = 'Din ansökan väntar — tryck för att ta bort';
+        btn.addEventListener('click', () => cancelRequest(w, d));
+      } else if (selected.has(key)) {
+        btn.classList.add('selected');
+        btn.setAttribute('aria-pressed', 'true');
+        btn.title = info.redName ? info.title + ' — vald' : 'Vald, inte skickad';
+        btn.addEventListener('click', () => toggleDay(w, d));
       } else {
-        td.addEventListener('click', () => submitRequest(w, d));
+        btn.setAttribute('aria-pressed', 'false');
+        btn.title = info.redName ? info.title : 'Markera dag';
+        btn.addEventListener('click', () => toggleDay(w, d));
       }
 
-      markRedDayCell(td, dayColumnInfo(currentYear, w, d));
-
-      row.appendChild(td);
+      days.appendChild(btn);
     }
+
+    section.appendChild(days);
+    list.appendChild(section);
   });
 
-  applyRedDayClusters([...row.querySelectorAll('.day-cell')]);
-
-  tbody.appendChild(row);
-  table.appendChild(tbody);
-  reqGrid.appendChild(table);
+  reqGrid.appendChild(list);
+  updateSubmitBar();
 }
 
-async function submitRequest(week, day) {
-  await db.rpc('submit_vacation_request', {
-    p_token: token, p_year: currentYear, p_week: week, p_day: day, p_category: 0
-  });
-  requests[week + '_' + day] = 'pending';
-  showStatus('Ansökan skickad för V' + week + ' ' + DAY_NAMES[day - 1], 'success');
+async function submitSelected() {
+  if (selected.size === 0 || submitting) return;
+  submitting = true;
+  updateSubmitBar();
+  const days = [...selected];
+  for (const key of days) {
+    const [week, day] = key.split('_').map(Number);
+    const { error } = await db.rpc('submit_vacation_request', {
+      p_token: token, p_year: currentYear, p_week: week, p_day: day, p_category: 0
+    });
+    if (error) {
+      submitting = false;
+      showStatus('Kunde inte skicka ansökan: ' + error.message, 'error');
+      await loadData();
+      renderGrid();
+      return;
+    }
+    selected.delete(key);
+  }
+  submitting = false;
+  const n = days.length;
+  showStatus(n === 1 ? 'Ansökan skickad för 1 dag' : 'Ansökan skickad för ' + n + ' dagar', 'success');
+  await loadData();
   renderGrid();
 }
 
@@ -184,7 +221,10 @@ async function cancelRequest(week, day) {
   });
   delete requests[week + '_' + day];
   showStatus('Ansökan borttagen för V' + week + ' ' + DAY_NAMES[day - 1], 'success');
+  await loadData();
   renderGrid();
 }
+
+document.getElementById('req-submit-btn').addEventListener('click', submitSelected);
 
 init();
