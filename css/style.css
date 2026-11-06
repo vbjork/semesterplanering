@@ -574,12 +574,14 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 5px 8px;
+  min-height: 34px;
   border-radius: var(--radius-md);
   transition: background 0.15s;
 }
 .emp-list li:hover { background: var(--color-bg-hover); }
 .emp-list .employee-name {
   font-size: 0.82rem;
+  line-height: 20px;
   color: var(--color-text);
 }
 .emp-list .delete-btn {
@@ -821,15 +823,43 @@ body {
   z-index: 1;
 }
 .vacation-table thead tr:first-child th {
-  padding: 8px 3px 4px;
+  padding: 6px 3px 4px;
+  top: 0;
   border-bottom: 1px solid var(--color-primary-border);
 }
+.vacation-table thead tr:first-child th.col-week-group {
+  height: 38px;
+}
 .vacation-table thead tr:last-child th {
-  padding: 3px 2px 6px;
+  padding: 2px 1px 4px;
+  top: 38px;
   border-bottom: 2px solid var(--color-primary-border);
   font-size: 0.68rem;
   font-weight: 500;
   color: var(--color-text-muted);
+}
+.col-week-label,
+.col-week-dates,
+.col-day-name,
+.col-day-num {
+  display: block;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.col-week-dates,
+.col-day-num {
+  font-size: 0.62rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.col-week-dates {
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+.vacation-table .col-week-pickable.picking .col-week-dates {
+  color: #fff;
 }
 .vacation-table thead th:first-child {
   border-radius: var(--radius-lg) 0 0 0;
@@ -851,7 +881,7 @@ body {
   color: #fff;
 }
 .vacation-table .col-day {
-  min-width: 18px;
+  min-width: 22px;
 }
 .vacation-table .col-name {
   text-align: left;
@@ -892,11 +922,21 @@ body {
   border-bottom: 1px solid #e2e8f0;
   vertical-align: middle;
 }
+.vacation-table tbody tr:not(.summary-row) {
+  height: 36px;
+}
 .vacation-table tbody td.col-name {
   font-weight: 600;
   font-size: 0.88rem;
+  line-height: 0;
   color: var(--color-text-dark);
   padding: 8px 14px;
+}
+.col-name-text {
+  display: inline-block;
+  max-width: 100%;
+  line-height: 20px;
+  vertical-align: middle;
 }
 .vacation-table .day-cell {
   cursor: pointer;
@@ -924,6 +964,22 @@ body {
 }
 .vacation-table tbody td.day-cell:nth-of-type(7n+2) {
   border-left: 1px solid var(--color-border-light);
+}
+.vacation-table thead th.col-day.red-day,
+.vacation-table thead th.col-day.red-day .col-day-num {
+  color: var(--color-error);
+}
+.vacation-table .day-cell.red-day:not(.active):not(.pending-request):not(.rejected-request):not(.request-pending) {
+  background: #fde8e8;
+}
+.vacation-table .day-cell.red-day {
+  box-shadow: inset 0 -2px 0 #dc2626;
+}
+.vacation-table .day-cell.jour-cell.red-day {
+  box-shadow: inset 0 0 0 2px #f0a8a8, inset 0 -2px 0 #dc2626;
+}
+.vacation-table .summary-row td.red-day {
+  box-shadow: inset 0 -2px 0 #dc2626;
 }
 .col-total.emp-total {
   color: var(--color-primary);
@@ -1389,7 +1445,9 @@ body {
     color: #4338ca;
     border-bottom: 1.5px solid #a5b4fc;
   }
-  .vacation-table thead tr:first-child th {
+  .vacation-table thead tr:first-child th,
+  .vacation-table thead tr:first-child th.col-week-group {
+    height: auto;
     padding: 3px 1px 2px;
     font-size: 0.65rem;
     font-weight: 700;
@@ -1397,6 +1455,10 @@ body {
   .vacation-table thead tr:last-child th {
     font-size: 0.55rem;
     padding: 1px 1px 2px;
+  }
+  .vacation-table thead th.col-day.red-day,
+  .vacation-table thead th.col-day.red-day .col-day-num {
+    color: #dc2626 !important;
   }
   .vacation-table .col-week-group {
     border-left: 1.5px solid #a5b4fc;
@@ -1430,12 +1492,19 @@ body {
     border-left: 1.5px solid #cbd5e1;
   }
 
-  /* Name column */
+  /* Name column — same line box for every name, including å/ä/ö and descenders */
+  .vacation-table tbody tr:not(.summary-row) {
+    height: 14px;
+  }
   .vacation-table tbody td.col-name {
     font-weight: 600;
     font-size: 0.68rem;
+    line-height: 0;
     border-right: 1.5px solid #cbd5e1;
     padding: 1px 6px;
+  }
+  .col-name-text {
+    line-height: 12px;
   }
 
   /* Total column */

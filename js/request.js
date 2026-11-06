@@ -97,17 +97,24 @@ async function renderGrid() {
     const th = document.createElement('th');
     th.className = 'col-week-group';
     th.colSpan = 7;
-    th.textContent = 'V' + w;
+    const weekLabel = document.createElement('span');
+    weekLabel.className = 'col-week-label';
+    weekLabel.textContent = 'V' + w;
+    const weekDates = document.createElement('span');
+    weekDates.className = 'col-week-dates';
+    weekDates.textContent = weekRangeLabel(currentYear, w);
+    th.appendChild(weekLabel);
+    th.appendChild(weekDates);
+    th.title = weekRangeLabel(currentYear, w);
     weekRow.appendChild(th);
   });
   thead.appendChild(weekRow);
 
   const dayRow = document.createElement('tr');
-  weeks.forEach(() => {
-    DAY_NAMES.forEach(d => {
+  weeks.forEach(w => {
+    DAY_NAMES.forEach((d, i) => {
       const th = document.createElement('th');
-      th.className = 'col-day';
-      th.textContent = d;
+      fillDayHeader(th, d, dayColumnInfo(currentYear, w, i + 1));
       dayRow.appendChild(th);
     });
   });
@@ -118,7 +125,10 @@ async function renderGrid() {
   const row = document.createElement('tr');
   const nameCell = document.createElement('td');
   nameCell.className = 'col-name';
-  nameCell.textContent = employee.name;
+  const nameText = document.createElement('span');
+  nameText.className = 'col-name-text';
+  nameText.textContent = employee.name;
+  nameCell.appendChild(nameText);
   row.appendChild(nameCell);
 
   weeks.forEach(w => {
@@ -144,6 +154,8 @@ async function renderGrid() {
       } else {
         td.addEventListener('click', () => submitRequest(w, d));
       }
+
+      markRedDayCell(td, dayColumnInfo(currentYear, w, d));
 
       row.appendChild(td);
     }

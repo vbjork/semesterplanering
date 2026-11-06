@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ansök om semester</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20261106">
   <style>
     .req-header {
       background: var(--color-primary);
@@ -73,6 +73,7 @@
         <div class="req-legend-item"><div class="req-legend-dot" style="background:#b6e2c8;"></div> Godkänd</div>
         <div class="req-legend-item"><div class="req-legend-dot pending"></div> Din ansökan</div>
         <div class="req-legend-item"><div class="req-legend-dot" style="background:#eaecf0;"></div> Klicka för att ansöka</div>
+        <div class="req-legend-item"><div class="req-legend-dot" style="background:#fde8e8;border-color:#dc2626;"></div> Röd dag</div>
       </div>
       <div id="req-grid"></div>
       <div id="req-status" class="req-status"></div>
@@ -82,6 +83,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
-  <script src="js/request.js"></script>
+  <script src="js/calendar.js?v=20261106"></script>
+  <script src="js/request.js?v=20261106"></script>
 </body>
 </html>
