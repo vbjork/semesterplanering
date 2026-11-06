@@ -147,3 +147,48 @@ function applyRedDayClusters(dayCells) {
     else if (!next) dayCells[i].classList.add('red-cluster-end');
   }
 }
+
+function askConfirm(message) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML =
+      '<div class="note-modal-box" role="dialog" aria-modal="true">' +
+        '<div class="panel-header">' +
+          '<span class="panel-title">Bekräfta</span>' +
+          '<button type="button" class="panel-close" aria-label="Avbryt">&times;</button>' +
+        '</div>' +
+        '<div style="padding:16px 20px;">' +
+          '<p class="ask-confirm-text" style="margin:0 0 16px;font-size:0.95rem;line-height:1.5;"></p>' +
+          '<div style="display:flex;gap:8px;">' +
+            '<button type="button" class="ds-btn ask-confirm-cancel" style="flex:1;">Avbryt</button>' +
+            '<button type="button" class="ds-btn ds-btn-danger ask-confirm-ok" style="flex:1;">Bekräfta</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    overlay.querySelector('.ask-confirm-text').textContent = message;
+
+    let settled = false;
+    const close = (value) => {
+      if (settled) return;
+      settled = true;
+      document.removeEventListener('keydown', onKey);
+      overlay.remove();
+      resolve(value);
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        close(false);
+      }
+    };
+
+    overlay.querySelector('.panel-close').addEventListener('click', () => close(false));
+    overlay.querySelector('.ask-confirm-cancel').addEventListener('click', () => close(false));
+    overlay.querySelector('.ask-confirm-ok').addEventListener('click', () => close(true));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(overlay);
+    overlay.querySelector('.ask-confirm-cancel').focus();
+  });
+}

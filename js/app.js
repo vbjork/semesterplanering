@@ -663,25 +663,64 @@ function applyDragPreview(td) {
   }
 }
 
+function weekdayName(day) {
+  return ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag', 'söndag'][day - 1];
+}
+
+function removalConfirmText(targets) {
+  const names = [...new Set(targets.map(cell => {
+    const emp = employees.find(e => e.id === cell.employeeId);
+    return emp ? emp.name : '';
+  }).filter(Boolean))];
+  const who = names.length === 1 ? names[0] : null;
+  const n = targets.length;
+  if (jourMode) {
+    if (n === 1) {
+      const cell = targets[0];
+      return 'Ta bort jour för ' + (who || 'den anställda') + ', vecka ' + cell.week + ' ' + weekdayName(cell.day) + '?';
+    }
+    return who ? 'Ta bort jour för ' + who + ', ' + n + ' dagar?' : 'Ta bort jour för ' + n + ' dagar?';
+  }
+  if (n === 1) {
+    const cell = targets[0];
+    const key = cell.employeeId + '_' + cell.week + '_' + cell.day;
+    const label = assignments[key] ? getLeaveTypeName(assignments[key].category) : 'ledighet';
+    return 'Ta bort ' + label + ' för ' + (who || 'den anställda') + ', vecka ' + cell.week + ' ' + weekdayName(cell.day) + '?';
+  }
+  return who ? 'Ta bort ledighet för ' + who + ', ' + n + ' dagar?' : 'Ta bort ledighet för ' + n + ' dagar?';
+}
+
 async function handleDragEnd() {
   if (!isDragging) return;
   isDragging = false;
+  const cells = dragCells.slice();
+  const mode = dragMode;
+  dragCells = [];
 
-  for (const cell of dragCells) {
+  if (mode === 'remove') {
+    const targets = cells.filter(cell => {
+      const key = cell.employeeId + '_' + cell.week + '_' + cell.day;
+      return jourMode ? jourAssignments[key] : assignments[key];
+    });
+    renderGrid();
+    if (targets.length === 0) return;
+    const ok = await askConfirm(removalConfirmText(targets));
+    if (!ok) return;
+    for (const cell of targets) {
+      if (jourMode) await setJour(cell.employeeId, cell.week, cell.day, false);
+      else await setAssignment(cell.employeeId, cell.week, cell.day, null);
+    }
+    renderGrid();
+    return;
+  }
+
+  for (const cell of cells) {
     cell.td.style.opacity = '';
     cell.td.style.background = '';
     cell.td.style.outline = '';
-
-    if (jourMode) {
-      await setJour(cell.employeeId, cell.week, cell.day, dragMode === 'add');
-    } else if (dragMode === 'add') {
-      await setAssignment(cell.employeeId, cell.week, cell.day, activeColor);
-    } else {
-      await setAssignment(cell.employeeId, cell.week, cell.day, null);
-    }
+    if (jourMode) await setJour(cell.employeeId, cell.week, cell.day, true);
+    else await setAssignment(cell.employeeId, cell.week, cell.day, activeColor);
   }
-
-  dragCells = [];
   renderGrid();
 }
 
