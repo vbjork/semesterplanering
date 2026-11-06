@@ -4,19 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ansök om semester</title>
-  <link rel="stylesheet" href="css/style.css?v=20261106b">
+  <link rel="stylesheet" href="css/style.css?v=20261106c">
   <style>
+    html, body { overflow-x: hidden; }
     .req-header {
       background: var(--color-primary);
       color: #fff;
-      padding: 16px 24px;
+      padding: 14px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
     }
-    .req-header h1 { font-size: 1.1rem; font-weight: 700; }
-    .req-header .req-name { font-size: 0.9rem; opacity: 0.85; }
-    .req-body { padding: 16px 24px; }
+    .req-header h1 { font-size: 1.05rem; font-weight: 700; }
+    .req-header .req-name {
+      font-size: 0.9rem;
+      opacity: 0.85;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+    .req-body {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 12px 12px 108px;
+    }
     .req-legend {
       display: flex;
       gap: 16px;
@@ -49,16 +62,98 @@
     .req-status.success { display: block; background: var(--color-success-light); color: var(--color-success-dark); }
     .req-status.error { display: block; background: var(--color-error-light); color: var(--color-error); }
 
-    .vacation-table .day-cell.request-pending {
-      background: repeating-linear-gradient(45deg, #c7d2fe 0, #c7d2fe 3px, #e0e7ff 3px, #e0e7ff 6px) !important;
+    .req-hint {
+      margin: 0 0 14px;
+      font-size: 0.88rem;
+      line-height: 1.4;
+      color: var(--color-text);
+    }
+    .req-week { margin-bottom: 14px; }
+    .req-week-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+    .req-week-dates {
+      font-weight: 500;
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+    }
+    .req-days {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 4px;
+    }
+    .req-day {
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid var(--color-border);
+      background: #fff;
+      border-radius: 10px;
+      min-height: 52px;
+      padding: 4px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      font-family: inherit;
+      color: var(--color-text);
       cursor: pointer;
+      touch-action: manipulation;
     }
-    .vacation-table .day-cell.request-pending:hover {
-      filter: brightness(0.9);
+    .req-day-name { font-size: 0.68rem; font-weight: 600; line-height: 1.1; }
+    .req-day-num { font-size: 1rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .req-day.weekend:not(.selected):not(.approved):not(.pending):not(.red-day) { background: #eaecf0; }
+    .req-day.red-day:not(.selected):not(.approved):not(.pending) {
+      background: #f6d4d4;
+      color: var(--color-error);
+      border-color: #f0b4b4;
     }
-    .vacation-table .day-cell.request-approved {
-      opacity: 0.7;
-      cursor: default;
+    .req-day.selected {
+      background: var(--color-primary);
+      color: #fff;
+      border-color: var(--color-primary);
+    }
+    .req-day.pending {
+      background: repeating-linear-gradient(45deg, #c7d2fe 0, #c7d2fe 3px, #e0e7ff 3px, #e0e7ff 6px);
+      border-color: #a5b4fc;
+    }
+    .req-day.approved { cursor: default; opacity: 0.95; }
+    .req-day:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .req-submit-bar[hidden] { display: none; }
+    .req-submit-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+      background: #fff;
+      border-top: 1px solid var(--color-border);
+      box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06);
+      z-index: 5;
+    }
+    .req-submit-bar span {
+      flex: 1;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+    .req-submit-bar .ds-btn {
+      min-height: 48px;
+      padding: 12px 18px;
+      font-size: 1rem;
+    }
+    @media (max-width: 380px) {
+      .req-header { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .req-header .req-name { max-width: 100%; }
     }
   </style>
 </head>
@@ -72,18 +167,23 @@
       <div class="req-legend">
         <div class="req-legend-item"><div class="req-legend-dot" style="background:#b6e2c8;"></div> Godkänd</div>
         <div class="req-legend-item"><div class="req-legend-dot pending"></div> Din ansökan</div>
-        <div class="req-legend-item"><div class="req-legend-dot" style="background:#eaecf0;"></div> Klicka för att ansöka</div>
+        <div class="req-legend-item"><div class="req-legend-dot" style="background:#6366f1;"></div> Vald</div>
         <div class="req-legend-item"><div class="req-legend-dot" style="background:#f6d4d4;border-color:#dc2626;"></div> Röd dag</div>
       </div>
+      <p class="req-hint">Markera dagarna du vill vara ledig. Ingenting skickas förrän du trycker på Skicka ansökan.</p>
       <div id="req-grid"></div>
       <div id="req-status" class="req-status"></div>
+    </div>
+    <div class="req-submit-bar" id="req-submit-bar" hidden>
+      <span id="req-submit-count">Inga dagar valda</span>
+      <button type="button" id="req-submit-btn" class="ds-btn ds-btn-primary" disabled>Skicka ansökan</button>
     </div>
     <div id="req-error" class="req-msg" style="display:none;"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
-  <script src="js/calendar.js?v=20261106b"></script>
-  <script src="js/request.js?v=20261106b"></script>
+  <script src="js/calendar.js?v=20261106c"></script>
+  <script src="js/request.js?v=20261106c"></script>
 </body>
 </html>
