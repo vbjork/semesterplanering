@@ -128,6 +128,7 @@ async function renderGrid() {
   const nameText = document.createElement('span');
   nameText.className = 'col-name-text';
   nameText.textContent = employee.name;
+  nameText.title = employee.name;
   nameCell.appendChild(nameText);
   row.appendChild(nameCell);
 
@@ -160,6 +161,8 @@ async function renderGrid() {
       row.appendChild(td);
     }
   });
+
+  applyRedDayClusters([...row.querySelectorAll('.day-cell')]);
 
   tbody.appendChild(row);
   table.appendChild(tbody);

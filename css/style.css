@@ -933,10 +933,12 @@ body {
   padding: 8px 14px;
 }
 .col-name-text {
-  display: inline-block;
-  max-width: 100%;
+  display: block;
+  width: 100%;
   line-height: 20px;
-  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .vacation-table .day-cell {
   cursor: pointer;
@@ -970,16 +972,19 @@ body {
   color: var(--color-error);
 }
 .vacation-table .day-cell.red-day:not(.active):not(.pending-request):not(.rejected-request):not(.request-pending) {
-  background: #fde8e8;
+  background: #f6d4d4;
 }
-.vacation-table .day-cell.red-day {
-  box-shadow: inset 0 -2px 0 #dc2626;
+.vacation-table .day-cell.red-day:not(.active):not(.pending-request):not(.rejected-request):not(.request-pending):hover {
+  background: #f0c2c2;
 }
-.vacation-table .day-cell.jour-cell.red-day {
-  box-shadow: inset 0 0 0 2px #f0a8a8, inset 0 -2px 0 #dc2626;
+.vacation-table .day-cell.red-cluster-single {
+  border-radius: 6px;
 }
-.vacation-table .summary-row td.red-day {
-  box-shadow: inset 0 -2px 0 #dc2626;
+.vacation-table .day-cell.red-cluster-start {
+  border-radius: 6px 0 0 6px;
+}
+.vacation-table .day-cell.red-cluster-end {
+  border-radius: 0 6px 6px 0;
 }
 .col-total.emp-total {
   color: var(--color-primary);
