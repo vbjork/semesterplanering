@@ -848,6 +848,7 @@ function renderGrid() {
     const nameText = document.createElement('span');
     nameText.className = 'col-name-text';
     nameText.textContent = emp.name;
+    nameText.title = emp.name;
     nameCell.appendChild(nameText);
     row.appendChild(nameCell);
 
@@ -941,6 +942,8 @@ function renderGrid() {
       else if (!prev) dayCells[i].classList.add('jour-cluster-start');
       else if (!next) dayCells[i].classList.add('jour-cluster-end');
     }
+
+    applyRedDayClusters(dayCells);
 
     const totalCell = document.createElement('td');
     totalCell.className = 'col-total emp-total';
@@ -1130,7 +1133,7 @@ exportPdfBtn.addEventListener('click', () => {
   });
   const redItem = document.createElement('span');
   redItem.className = 'print-legend-item';
-  redItem.innerHTML = '<span class="print-legend-dot" style="background:#fde8e8;border-color:#dc2626;"></span>Röd dag';
+  redItem.innerHTML = '<span class="print-legend-dot" style="background:#f6d4d4;border-color:#dc2626;"></span>Röd dag';
   legend.appendChild(redItem);
 
   document.getElementById('print-date').textContent = 'Utskriven ' + new Date().toLocaleDateString('sv-SE');

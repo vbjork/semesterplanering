@@ -128,3 +128,22 @@ function markRedDayCell(td, info) {
   td.classList.add('red-day');
   td.title = td.title ? td.title + ' — ' + info.redName : info.redName;
 }
+
+function redDayFillVisible(td) {
+  if (!td || !td.classList.contains('red-day')) return false;
+  return !td.classList.contains('active')
+    && !td.classList.contains('pending-request')
+    && !td.classList.contains('rejected-request')
+    && !td.classList.contains('request-pending');
+}
+
+function applyRedDayClusters(dayCells) {
+  for (let i = 0; i < dayCells.length; i++) {
+    if (!redDayFillVisible(dayCells[i])) continue;
+    const prev = redDayFillVisible(dayCells[i - 1]);
+    const next = redDayFillVisible(dayCells[i + 1]);
+    if (!prev && !next) dayCells[i].classList.add('red-cluster-single');
+    else if (!prev) dayCells[i].classList.add('red-cluster-start');
+    else if (!next) dayCells[i].classList.add('red-cluster-end');
+  }
+}
