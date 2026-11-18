@@ -1,14 +1,14 @@
 const COLORS = [
-  { bg: '#b6e2c8', default: 'Semester' },
-  { bg: '#bbc5f5', default: 'Föräldraledig' },
-  { bg: '#f5c4a1', default: 'VAB' },
-  { bg: '#f5dfa1', default: 'Tjänstledig' },
-  { bg: '#f5b0c5', default: 'Sjuk' },
-  { bg: '#a1ddd5', default: 'Utbildning' },
-  { bg: '#f5d4a8', default: 'Kompledigt' },
-  { bg: '#e2b5f5', default: 'Permission' },
-  { bg: '#f5a8a8', default: 'Annat 1' },
-  { bg: '#c8ced8', default: 'Annat 2' },
+  { bg: '#3fad78', default: 'Semester' },
+  { bg: '#6f8fe8', default: 'Föräldraledig' },
+  { bg: '#e39a4a', default: 'VAB' },
+  { bg: '#e2c04a', default: 'Tjänstledig' },
+  { bg: '#e07aa0', default: 'Sjuk' },
+  { bg: '#3eb8b0', default: 'Utbildning' },
+  { bg: '#d9a15a', default: 'Kompledigt' },
+  { bg: '#b97ad6', default: 'Permission' },
+  { bg: '#e06a6a', default: 'Annat 1' },
+  { bg: '#8b97a8', default: 'Annat 2' },
 ];
 
 const DAY_NAMES = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
@@ -146,6 +146,7 @@ function renderGrid() {
       btn.className = 'req-day';
       if (d >= 6) btn.classList.add('weekend');
       if (info.redName) btn.classList.add('red-day');
+      if (isCalendarToday(info.date)) btn.classList.add('is-today');
 
       const nameEl = document.createElement('span');
       nameEl.className = 'req-day-name';

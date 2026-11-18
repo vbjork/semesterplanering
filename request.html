@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ansök om semester</title>
-  <link rel="stylesheet" href="css/style.css?v=20261106c">
+  <link rel="stylesheet" href="css/style.css?v=20261118a">
   <style>
     html, body { overflow-x: hidden; }
     .req-header {
@@ -114,6 +114,9 @@
       color: var(--color-error);
       border-color: #f0b4b4;
     }
+    .req-day.is-today:not(.selected):not(.approved):not(.pending) {
+      box-shadow: inset 0 0 0 2px #1d4e89;
+    }
     .req-day.selected {
       background: var(--color-primary);
       color: #fff;
@@ -183,7 +186,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
-  <script src="js/calendar.js?v=20261106d"></script>
-  <script src="js/request.js?v=20261106d"></script>
+  <script src="js/calendar.js?v=20261118a"></script>
+  <script src="js/request.js?v=20261118a"></script>
 </body>
 </html>
