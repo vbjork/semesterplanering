@@ -828,11 +828,11 @@ body {
   border-bottom: 1px solid var(--color-primary-border);
 }
 .vacation-table thead tr:first-child th.col-week-group {
-  height: 38px;
+  height: 36px;
 }
 .vacation-table thead tr:last-child th {
-  padding: 2px 1px 4px;
-  top: 38px;
+  padding: 1px 0 2px;
+  top: 36px;
   border-bottom: 2px solid var(--color-primary-border);
   font-size: 0.68rem;
   font-weight: 500;
@@ -848,9 +848,10 @@ body {
   line-height: 1.15;
   white-space: nowrap;
 }
+.col-week-label { font-size: 0.72rem; }
 .col-week-dates,
 .col-day-num {
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -881,14 +882,14 @@ body {
   color: #fff;
 }
 .vacation-table .col-day {
-  min-width: 22px;
+  min-width: 16px;
 }
 .vacation-table .col-name {
   text-align: left;
-  padding-left: 14px;
-  padding-right: 10px;
-  width: 120px;
-  min-width: 120px;
+  padding-left: 8px;
+  padding-right: 6px;
+  width: 132px;
+  min-width: 132px;
   position: sticky;
   left: 0;
   z-index: 2;
@@ -902,8 +903,8 @@ body {
   font-size: 0.82rem;
 }
 .vacation-table .col-total {
-  width: 52px;
-  min-width: 52px;
+  width: 36px;
+  min-width: 36px;
   text-align: center;
   border-left: 1px solid var(--color-border);
   font-weight: 700;
@@ -923,27 +924,50 @@ body {
   vertical-align: middle;
 }
 .vacation-table tbody tr:not(.summary-row) {
-  height: 36px;
+  height: 24px;
 }
 .vacation-table tbody td.col-name {
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 0.72rem;
   line-height: 0;
   color: var(--color-text-dark);
-  padding: 8px 14px;
+  padding: 2px 8px;
+}
+.emp-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+}
+.emp-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 .col-name-text {
   display: block;
-  width: 100%;
-  line-height: 20px;
+  min-width: 0;
+  flex: 1;
+  line-height: 16px;
+  font-size: 0.72rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .vacation-table .day-cell {
   cursor: pointer;
-  padding: 3px 1px;
-  height: 32px;
+  padding: 1px;
+  height: 22px;
   transition: background 0.1s;
 }
 .vacation-table .day-cell:hover {
@@ -953,13 +977,13 @@ body {
   background: #eaecf0;
 }
 .vacation-table .day-cell.cluster-single {
-  border-radius: 6px;
+  border-radius: 3px;
 }
 .vacation-table .day-cell.cluster-start {
-  border-radius: 6px 0 0 6px;
+  border-radius: 3px 0 0 3px;
 }
 .vacation-table .day-cell.cluster-end {
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 3px 3px 0;
 }
 .vacation-table .day-cell.active:hover {
   filter: brightness(0.9);
@@ -978,13 +1002,28 @@ body {
   background: #f0c2c2;
 }
 .vacation-table .day-cell.red-cluster-single {
-  border-radius: 6px;
+  border-radius: 3px;
 }
 .vacation-table .day-cell.red-cluster-start {
-  border-radius: 6px 0 0 6px;
+  border-radius: 3px 0 0 3px;
 }
 .vacation-table .day-cell.red-cluster-end {
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 3px 3px 0;
+}
+.vacation-table thead th.col-day.is-today .col-day-num {
+  display: inline-block;
+  background: #111827;
+  color: #fff;
+  border-radius: 999px;
+  min-width: 14px;
+  padding: 0 3px;
+  line-height: 14px;
+}
+.vacation-table .day-cell.is-today {
+  box-shadow: inset 1px 0 0 #111827, inset -1px 0 0 #111827;
+}
+.vacation-table .day-cell.jour-cell.is-today {
+  box-shadow: inset 0 0 0 2px #e11d48, inset 1px 0 0 #111827, inset -1px 0 0 #111827;
 }
 .col-total.emp-total {
   color: var(--color-primary);
@@ -1140,16 +1179,16 @@ body {
 
 /* Jour */
 .day-cell.jour-cell {
-  box-shadow: inset 0 0 0 2px #f0a8a8;
+  box-shadow: inset 0 0 0 2px #e11d48;
 }
 .day-cell.jour-cluster-single {
-  border-radius: 6px;
+  border-radius: 3px;
 }
 .day-cell.jour-cluster-start {
-  border-radius: 6px 0 0 6px;
+  border-radius: 3px 0 0 3px;
 }
 .day-cell.jour-cluster-end {
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 3px 3px 0;
 }
 
 /* Pending requests */
@@ -1290,7 +1329,15 @@ body {
   .group-tabs { gap: 1px; }
   .group-tab { padding: 4px 10px; font-size: 0.7rem; }
   .panel { width: 100%; max-width: 100%; }
-  .grid-fullscreen { padding: 8px; }
+  .grid-fullscreen { padding: 8px; justify-content: flex-start; }
+  .topbar { height: auto; flex-wrap: wrap; row-gap: 6px; padding: 8px 10px; }
+  .topbar-left, .topbar-right { width: 100%; flex-wrap: wrap; }
+  .color-bar { overflow-x: auto; }
+  .vacation-table { width: max-content; min-width: 100%; }
+  .vacation-table tbody tr:not(.summary-row) { height: 36px; }
+  .vacation-table .day-cell { height: 34px; }
+  .vacation-table .col-day { width: 32px; min-width: 32px; }
+  .vacation-table .col-name { width: 124px; min-width: 124px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
