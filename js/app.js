@@ -18,20 +18,30 @@ let pendingWeekPick = null;
 const DAY_NAMES = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
 
 const COLORS = [
-  { bg: '#b6e2c8', hover: '#8fd4ac', default: 'Semester' },
-  { bg: '#bbc5f5', hover: '#9aa8f0', default: 'Föräldraledig' },
-  { bg: '#f5c4a1', hover: '#f0a878', default: 'VAB' },
-  { bg: '#f5dfa1', hover: '#f0d078', default: 'Tjänstledig' },
-  { bg: '#f5b0c5', hover: '#f08da8', default: 'Sjuk' },
-  { bg: '#a1ddd5', hover: '#78d0c4', default: 'Utbildning' },
-  { bg: '#f5d4a8', hover: '#f0c080', default: 'Kompledigt' },
-  { bg: '#e2b5f5', hover: '#d494f0', default: 'Permission' },
-  { bg: '#f5a8a8', hover: '#f08080', default: 'Annat 1' },
-  { bg: '#c8ced8', hover: '#aeb6c4', default: 'Annat 2' },
+  { bg: '#3fad78', hover: '#2f9664', default: 'Semester' },
+  { bg: '#6f8fe8', hover: '#5876d4', default: 'Föräldraledig' },
+  { bg: '#e39a4a', hover: '#cf862f', default: 'VAB' },
+  { bg: '#e2c04a', hover: '#c9a62e', default: 'Tjänstledig' },
+  { bg: '#e07aa0', hover: '#cc5f88', default: 'Sjuk' },
+  { bg: '#3eb8b0', hover: '#2a9e97', default: 'Utbildning' },
+  { bg: '#d9a15a', hover: '#c48b3e', default: 'Kompledigt' },
+  { bg: '#b97ad6', hover: '#a15fc0', default: 'Permission' },
+  { bg: '#e06a6a', hover: '#c85252', default: 'Annat 1' },
+  { bg: '#8b97a8', hover: '#748092', default: 'Annat 2' },
 ];
 
 function getLeaveTypeName(index) {
   return leaveTypes[index] || COLORS[index].default;
+}
+
+function employeeCompactLabel(name) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0] || name;
+  const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : first.slice(0, 2)).toUpperCase();
+  const palette = ['#0f766e', '#b45309', '#1d4ed8', '#be123c', '#6d28d9', '#047857', '#9a3412', '#0369a1'];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 33 + name.charCodeAt(i)) >>> 0;
+  return { first, initials, color: palette[hash % palette.length] };
 }
 
 // Drag state
@@ -884,11 +894,21 @@ function renderGrid() {
 
     const nameCell = document.createElement('td');
     nameCell.className = 'col-name';
+    const compact = employeeCompactLabel(emp.name);
+    const nameWrap = document.createElement('span');
+    nameWrap.className = 'emp-name';
+    nameWrap.title = emp.name;
+    const avatar = document.createElement('span');
+    avatar.className = 'emp-avatar';
+    avatar.textContent = compact.initials;
+    avatar.style.background = compact.color;
     const nameText = document.createElement('span');
     nameText.className = 'col-name-text';
-    nameText.textContent = emp.name;
+    nameText.textContent = compact.first;
     nameText.title = emp.name;
-    nameCell.appendChild(nameText);
+    nameWrap.appendChild(avatar);
+    nameWrap.appendChild(nameText);
+    nameCell.appendChild(nameWrap);
     row.appendChild(nameCell);
 
     let totalDays = 0;
@@ -936,7 +956,9 @@ function renderGrid() {
           td.title = (td.title ? td.title + ' — ' : '') + 'Jour';
         }
 
-        markRedDayCell(td, dayColumnInfo(currentYear, w, d));
+        const dayInfo = dayColumnInfo(currentYear, w, d);
+        markRedDayCell(td, dayInfo);
+        if (isCalendarToday(dayInfo.date)) td.classList.add('is-today');
 
         const noteKey = emp.id + '_' + w + '_' + d;
         if (cellNotes[noteKey]) {

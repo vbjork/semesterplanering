@@ -110,8 +110,19 @@ function weekRangeLabel(year, week) {
   return start.getUTCDate() + ' ' + startMonth + '–' + end.getUTCDate() + ' ' + endMonth;
 }
 
+function isCalendarToday(date) {
+  const now = new Date();
+  return date.getUTCFullYear() === now.getFullYear()
+    && date.getUTCMonth() === now.getMonth()
+    && date.getUTCDate() === now.getDate();
+}
+
 function fillDayHeader(th, weekdayLetter, info) {
-  th.className = 'col-day' + (info.redName ? ' red-day' : '');
+  const dow = info.date.getUTCDay();
+  th.className = 'col-day'
+    + (info.redName ? ' red-day' : '')
+    + (dow === 0 || dow === 6 ? ' weekend' : '')
+    + (isCalendarToday(info.date) ? ' is-today' : '');
   th.title = info.title;
   const nameEl = document.createElement('span');
   nameEl.className = 'col-day-name';
