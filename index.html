@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Semesterplanering</title>
-  <link rel="stylesheet" href="css/style.css?v=20261118a">
+  <link rel="stylesheet" href="css/style.css?v=20261119a">
 </head>
 <body>
 
@@ -53,9 +53,11 @@
           <button id="export-btn" class="topbar-btn">Exportera</button>
           <div id="export-menu" class="export-menu">
             <button id="export-excel">Exportera till Excel</button>
+            <button id="export-csv">Exportera CSV</button>
             <button id="export-pdf">Exportera till PDF</button>
           </div>
         </div>
+        <button id="pending-btn" class="topbar-btn" type="button">Ansökningar <span id="pending-count" class="pending-badge is-empty">0</span></button>
         <button id="dashboard-btn" class="topbar-btn">Översikt</button>
         <button id="log-btn" class="topbar-btn">Logg</button>
         <button id="settings-btn" class="topbar-btn">Inställningar</button>
@@ -68,6 +70,7 @@
     <div class="color-bar">
       <div id="color-palette" class="color-palette"></div>
       <button id="jour-toggle-btn" class="jour-toggle-btn" title="Markera jour genom att dra över dagar">Jour</button>
+      <input id="employee-search" class="ds-input name-search" type="search" placeholder="Sök namn" aria-label="Sök anställd">
     </div>
     <div class="print-header" style="display:none;">
       <h1>Semesterplanering</h1>
@@ -80,6 +83,18 @@
     <div id="week-nav-container"></div>
     <div class="app-body">
       <div class="grid-fullscreen" id="vacation-grid"></div>
+    </div>
+
+    <div id="pending-overlay" class="overlay hidden">
+      <div class="panel pending-panel">
+        <div class="panel-header">
+          <span class="panel-title">Väntande ansökningar</span>
+          <button id="close-pending" class="panel-close" type="button">&times;</button>
+        </div>
+        <div class="panel-body">
+          <div id="pending-list" class="pending-list"></div>
+        </div>
+      </div>
     </div>
 
     <div id="settings-overlay" class="overlay hidden">
@@ -217,7 +232,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/calendar.js?v=20261118a"></script>
-  <script src="js/app.js?v=20261118a"></script>
+  <script src="js/calendar.js?v=20261119a"></script>
+  <script src="js/app.js?v=20261119a"></script>
 </body>
 </html>

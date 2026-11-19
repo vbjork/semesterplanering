@@ -1,5 +1,5 @@
 const COLORS = [
-  { bg: '#3fad78', default: 'Semester' },
+  { bg: '#6BA5C9', default: 'Semester' },
   { bg: '#6f8fe8', default: 'Föräldraledig' },
   { bg: '#e39a4a', default: 'VAB' },
   { bg: '#e2c04a', default: 'Tjänstledig' },
