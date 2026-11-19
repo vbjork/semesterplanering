@@ -5,18 +5,30 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #f1f5f9;
-  color: #1e293b;
+  background: #F4F7FA;
+  color: #16324F;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   min-height: 100vh;
 }
 
 :root {
-  --color-primary:        #6366f1;
-  --color-primary-light:  #818cf8;
-  --color-primary-lighter: #eef2ff;
-  --color-primary-dark:   #4f46e5;
-  --color-primary-border: #c7d2fe;
+  --color-primary:        #1A4A6E;
+  --color-primary-light:  #3d6d94;
+  --color-primary-lighter: #F4F7FA;
+  --color-primary-dark:   #16324F;
+  --color-primary-border: #D7E6F0;
+
+  --nord-menu:            #16324F;
+  --nord-page:            #F4F7FA;
+  --nord-card:            #FFFFFF;
+  --nord-semester:        #6BA5C9;
+  --nord-jour:            #E08A3C;
+  --nord-jour-fill:       #FBE6CC;
+  --nord-red:             #FCE4DF;
+  --nord-red-accent:      #C45C55;
+  --nord-weekend:         #EEF3F6;
+  --nord-today:           #D7E6F0;
+  --nord-today-mark:      #1A4A6E;
 
   --color-success:        #10b981;
   --color-success-light:  #dcfce7;
@@ -33,7 +45,7 @@ body {
   --color-text-faint:     #94a3b8;
   --color-text-ghost:     #cbd5e1;
 
-  --color-bg:             #f1f5f9;
+  --color-bg:             #F4F7FA;
   --color-bg-card:        #ffffff;
   --color-bg-input:       #f8fafc;
   --color-bg-hover:       #f8fafc;
@@ -247,14 +259,15 @@ body {
    ═══════════════════════════════════════════════════════════════ */
 
 .topbar {
-  background: var(--color-primary);
+  background: #16324F;
   color: #fff;
   padding: 0 20px;
-  height: 48px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+  box-shadow: none;
+  border-bottom: 1px solid #16324F;
   flex-shrink: 0;
 }
 .topbar-left {
@@ -657,9 +670,9 @@ body {
 .jour-toggle-btn {
   padding: 6px 14px;
   border-radius: var(--radius-md);
-  border: 2px solid #f0a8a8;
-  background: var(--color-bg-input);
-  color: #b45454;
+  border: 2px solid #E08A3C;
+  background: #FBE6CC;
+  color: #7A3E12;
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
@@ -702,6 +715,53 @@ body {
   font-weight: 500;
   color: var(--color-text-muted);
   margin-left: 8px;
+}
+.name-search {
+  width: 190px;
+  max-width: 42vw;
+  margin-left: auto;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  background: #fff;
+}
+.pending-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #E08A3C;
+  color: #16324F;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.pending-badge.is-empty {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.pending-panel { width: 420px; }
+.pending-list { display: flex; flex-direction: column; gap: 8px; }
+.pending-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #D7E6F0;
+  border-radius: 10px;
+  background: #fff;
+}
+.pending-item-title { font-weight: 600; color: #16324F; }
+.pending-item-meta { font-size: 0.82rem; color: #3d5a73; }
+.pending-item-actions { display: flex; gap: 8px; }
+.pending-item-actions .ds-btn { flex: 1; }
+.pending-empty {
+  color: #3d5a73;
+  font-size: 0.9rem;
+  padding: 12px 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -811,32 +871,33 @@ body {
 }
 
 .vacation-table thead th {
-  background: var(--color-primary-lighter);
+  background: #fff;
   font-weight: 600;
-  color: var(--color-primary);
+  color: #111827;
   text-align: center;
   font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   position: sticky;
   top: 0;
   z-index: 1;
 }
 .vacation-table thead tr:first-child th {
-  padding: 6px 3px 4px;
+  padding: 8px 4px 4px;
   top: 0;
-  border-bottom: 1px solid var(--color-primary-border);
+  border-bottom: 1px solid #e6eaef;
 }
 .vacation-table thead tr:first-child th.col-week-group {
-  height: 38px;
+  height: 46px;
 }
 .vacation-table thead tr:last-child th {
-  padding: 2px 1px 4px;
-  top: 38px;
-  border-bottom: 2px solid var(--color-primary-border);
-  font-size: 0.68rem;
-  font-weight: 500;
-  color: var(--color-text-muted);
+  padding: 3px 1px 6px;
+  top: 46px;
+  border-bottom: 1px solid #d5dbe3;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  background: #fff;
 }
 .col-week-label,
 .col-week-dates,
@@ -848,15 +909,27 @@ body {
   line-height: 1.15;
   white-space: nowrap;
 }
+.col-week-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #16324F;
+}
 .col-week-dates,
 .col-day-num {
-  font-size: 0.62rem;
+  font-size: 0.78rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+.col-day-name {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #64748b;
+}
+.col-day-num { color: #16324F; font-weight: 700; }
 .col-week-dates {
+  font-size: 0.75rem;
   font-weight: 500;
-  color: var(--color-text-muted);
+  color: #64748b;
 }
 .vacation-table .col-week-pickable.picking .col-week-dates {
   color: #fff;
@@ -885,21 +958,23 @@ body {
 }
 .vacation-table .col-name {
   text-align: left;
-  padding-left: 14px;
-  padding-right: 10px;
-  width: 120px;
-  min-width: 120px;
+  padding-left: 16px;
+  padding-right: 12px;
+  width: 220px;
+  min-width: 220px;
   position: sticky;
   left: 0;
   z-index: 2;
-  background: var(--color-bg-card);
-  border-right: 1px solid var(--color-border);
+  background: #fff;
+  border-right: 1px solid #d5dbe3;
 }
 .vacation-table thead .col-name {
-  background: var(--color-primary-lighter);
+  background: #fff;
   z-index: 3;
   text-transform: none;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: #64748b;
 }
 .vacation-table .col-total {
   width: 52px;
@@ -919,11 +994,11 @@ body {
 .vacation-table tbody td {
   padding: 0;
   text-align: center;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e6eaef;
   vertical-align: middle;
 }
 .vacation-table tbody tr:not(.summary-row) {
-  height: 36px;
+  height: 40px;
 }
 .vacation-table tbody td.col-name {
   font-weight: 600;
@@ -949,8 +1024,11 @@ body {
 .vacation-table .day-cell:hover {
   background: #e8ecf1;
 }
-.vacation-table .day-cell.weekend {
-  background: #eaecf0;
+.vacation-table .day-cell.weekend:not(.active):not(.pending-request):not(.rejected-request):not(.red-day):not(.is-today) {
+  background: #EEF3F6;
+}
+.vacation-table thead th.col-day.weekend:not(.red-day):not(.is-today) {
+  background: #EEF3F6;
 }
 .vacation-table .day-cell.cluster-single {
   border-radius: 6px;
@@ -965,14 +1043,46 @@ body {
   filter: brightness(0.9);
 }
 .vacation-table tbody td.day-cell:nth-of-type(7n+2) {
-  border-left: 1px solid var(--color-border-light);
+  border-left: 1px solid #d5dbe3;
 }
 .vacation-table thead th.col-day.red-day,
 .vacation-table thead th.col-day.red-day .col-day-num {
-  color: var(--color-error);
+  color: #C45C55;
 }
 .vacation-table .day-cell.red-day:not(.active):not(.pending-request):not(.rejected-request):not(.request-pending) {
-  background: #f6d4d4;
+  background: #FCE4DF;
+}
+.vacation-table thead th.col-day.red-day {
+  background: #FCE4DF;
+}
+.vacation-table thead th.col-day.is-today .col-day-num {
+  display: inline-block;
+  background: #1A4A6E;
+  color: #fff;
+  border-radius: 999px;
+  min-width: 22px;
+  padding: 1px 5px;
+  line-height: 18px;
+}
+.vacation-table thead th.col-day.is-today {
+  background: #D7E6F0;
+  box-shadow: inset 2px 0 0 #1A4A6E, inset -2px 0 0 #1A4A6E;
+}
+.vacation-table .day-cell.is-today:not(.active):not(.pending-request):not(.rejected-request):not(.red-day) {
+  background: #D7E6F0;
+}
+.vacation-table .day-cell.is-today {
+  box-shadow: inset 2px 0 0 #1A4A6E, inset -2px 0 0 #1A4A6E;
+}
+.vacation-table .day-cell.jour-cell.is-today {
+  box-shadow: inset 0 0 0 2px #E08A3C, inset 2px 0 0 #1A4A6E, inset -2px 0 0 #1A4A6E;
+}
+.vacation-table thead th.col-name,
+.vacation-table thead th.col-total {
+  z-index: 5;
+}
+.vacation-table thead tr:last-child th {
+  z-index: 3;
 }
 .vacation-table .day-cell.red-day:not(.active):not(.pending-request):not(.rejected-request):not(.request-pending):hover {
   background: #f0c2c2;
@@ -1140,7 +1250,10 @@ body {
 
 /* Jour */
 .day-cell.jour-cell {
-  box-shadow: inset 0 0 0 2px #f0a8a8;
+  box-shadow: inset 0 0 0 2px #E08A3C;
+}
+.day-cell.jour-cell:not(.active):not(.pending-request):not(.rejected-request) {
+  background: #FBE6CC;
 }
 .day-cell.jour-cluster-single {
   border-radius: 6px;
@@ -1285,12 +1398,20 @@ body {
 @media (max-width: 768px) {
   .topbar { padding: 0 12px; height: 44px; }
   .topbar-title { font-size: 0.8rem; }
+  .topbar { height: auto; flex-wrap: wrap; row-gap: 6px; padding: 8px 10px; }
   .topbar-email { display: none; }
   .period-badge { display: none; }
   .group-tabs { gap: 1px; }
   .group-tab { padding: 4px 10px; font-size: 0.7rem; }
   .panel { width: 100%; max-width: 100%; }
-  .grid-fullscreen { padding: 8px; }
+  .grid-fullscreen { padding: 8px; justify-content: flex-start; }
+  .color-bar { overflow-x: auto; padding: 8px 10px; }
+  .topbar-left, .topbar-right { width: 100%; flex-wrap: wrap; }
+  .topbar-right { justify-content: flex-start; }
+  .vacation-table { width: max-content; min-width: 100%; }
+  .vacation-table .col-name { width: 168px; min-width: 168px; }
+  .vacation-table .col-day { width: 36px; min-width: 36px; }
+  .vacation-table .day-cell { height: 40px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1357,6 +1478,8 @@ body {
   .overlay,
   #note-modal,
   #log-overlay,
+  #pending-overlay,
+  .name-search,
   .emp-tooltip,
   .note-tooltip,
   .week-nav,
@@ -1384,7 +1507,7 @@ body {
     display: block !important;
     margin-bottom: 10px;
     padding-bottom: 8px;
-    border-bottom: 2px solid #6366f1;
+    border-bottom: 2px solid #16324F;
   }
   .print-header h1 {
     font-size: 18px;
@@ -1446,9 +1569,9 @@ body {
   }
   .vacation-table thead th {
     position: static !important;
-    background: #eef2ff !important;
-    color: #4338ca;
-    border-bottom: 1.5px solid #a5b4fc;
+    background: #F4F7FA !important;
+    color: #16324F;
+    border-bottom: 1.5px solid #6BA5C9;
   }
   .vacation-table thead tr:first-child th,
   .vacation-table thead tr:first-child th.col-week-group {
@@ -1463,7 +1586,7 @@ body {
   }
   .vacation-table thead th.col-day.red-day,
   .vacation-table thead th.col-day.red-day .col-day-num {
-    color: #dc2626 !important;
+    color: #C45C55 !important;
   }
   .vacation-table .col-week-group {
     border-left: 1.5px solid #a5b4fc;

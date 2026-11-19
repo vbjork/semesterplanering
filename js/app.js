@@ -14,20 +14,22 @@ let rejectedRequests = {};
 let jourAssignments = {};
 let jourMode = false;
 let pendingWeekPick = null;
+let nameQuery = '';
+let didScrollToToday = false;
 
 const DAY_NAMES = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
 
 const COLORS = [
-  { bg: '#b6e2c8', hover: '#8fd4ac', default: 'Semester' },
-  { bg: '#bbc5f5', hover: '#9aa8f0', default: 'Föräldraledig' },
-  { bg: '#f5c4a1', hover: '#f0a878', default: 'VAB' },
-  { bg: '#f5dfa1', hover: '#f0d078', default: 'Tjänstledig' },
-  { bg: '#f5b0c5', hover: '#f08da8', default: 'Sjuk' },
-  { bg: '#a1ddd5', hover: '#78d0c4', default: 'Utbildning' },
-  { bg: '#f5d4a8', hover: '#f0c080', default: 'Kompledigt' },
-  { bg: '#e2b5f5', hover: '#d494f0', default: 'Permission' },
-  { bg: '#f5a8a8', hover: '#f08080', default: 'Annat 1' },
-  { bg: '#c8ced8', hover: '#aeb6c4', default: 'Annat 2' },
+  { bg: '#6BA5C9', hover: '#5893b6', default: 'Semester' },
+  { bg: '#6f8fe8', hover: '#5876d4', default: 'Föräldraledig' },
+  { bg: '#e39a4a', hover: '#cf862f', default: 'VAB' },
+  { bg: '#e2c04a', hover: '#c9a62e', default: 'Tjänstledig' },
+  { bg: '#e07aa0', hover: '#cc5f88', default: 'Sjuk' },
+  { bg: '#3eb8b0', hover: '#2a9e97', default: 'Utbildning' },
+  { bg: '#d9a15a', hover: '#c48b3e', default: 'Kompledigt' },
+  { bg: '#b97ad6', hover: '#a15fc0', default: 'Permission' },
+  { bg: '#e06a6a', hover: '#c85252', default: 'Annat 1' },
+  { bg: '#8b97a8', hover: '#748092', default: 'Annat 2' },
 ];
 
 function getLeaveTypeName(index) {
@@ -287,6 +289,7 @@ async function loadGroups() {
 
 function renderGroupTabs() {
   groupTabs.innerHTML = '';
+  groupTabs.setAttribute('aria-label', 'Filtrera arbetslag');
   groups.forEach(g => {
     const btn = document.createElement('button');
     btn.className = 'group-tab' + (g.id === currentGroupId ? ' active' : '');
@@ -381,6 +384,7 @@ async function deleteGroup(id) {
 
 async function switchGroup(id) {
   currentGroupId = id;
+  didScrollToToday = false;
   renderGroupTabs();
   updateCurrentGroupName();
   await loadEmployees();
@@ -727,10 +731,118 @@ async function handleDragEnd() {
 document.addEventListener('mouseup', handleDragEnd);
 
 // Grid
+function visibleEmployees() {
+  const q = nameQuery.trim().toLowerCase();
+  if (!q) return employees;
+  return employees.filter(emp => emp.name.toLowerCase().includes(q));
+}
+
+function todayWeekNumber() {
+  const now = new Date();
+  const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  for (let w = 1; w <= 53; w++) {
+    const monday = isoWeekDate(currentYear, w, 1).getTime();
+    const sunday = isoWeekDate(currentYear, w, 7).getTime();
+    if (todayUtc >= monday && todayUtc <= sunday) return w;
+  }
+  return null;
+}
+
+function visibleWeeks() {
+  if (!vacationPeriod) return [];
+  const startW = vacationPeriod.start_week;
+  const endW = vacationPeriod.end_week;
+  if (viewStart === null || viewStart < startW) viewStart = startW;
+  if (viewSpan === null) {
+    const weeks = [];
+    for (let w = startW; w <= endW; w++) weeks.push(w);
+    return weeks;
+  }
+  if (viewStart + viewSpan - 1 > endW) viewStart = Math.max(startW, endW - viewSpan + 1);
+  const visEnd = Math.min(viewStart + viewSpan - 1, endW);
+  const weeks = [];
+  for (let w = viewStart; w <= visEnd; w++) weeks.push(w);
+  return weeks;
+}
+
+function scrollGridToToday() {
+  const cell = vacationGrid.querySelector('td.day-cell.is-today');
+  if (!cell) return;
+  const name = vacationGrid.querySelector('.col-name');
+  const gridRect = vacationGrid.getBoundingClientRect();
+  const cellRect = cell.getBoundingClientRect();
+  const nameW = name ? name.getBoundingClientRect().width : 0;
+  vacationGrid.scrollLeft += cellRect.left - gridRect.left - nameW - 12;
+}
+
+function pendingEntries() {
+  return Object.entries(pendingRequests).map(([key, entry]) => {
+    const [employeeId, week, day] = key.split('_');
+    const emp = employees.find(e => e.id === employeeId);
+    return {
+      key,
+      id: entry.id,
+      category: entry.category || 0,
+      employeeId,
+      week: parseInt(week, 10),
+      day: parseInt(day, 10),
+      name: emp ? emp.name : 'Anställd'
+    };
+  }).sort((a, b) => a.week - b.week || a.day - b.day || a.name.localeCompare(b.name, 'sv'));
+}
+
+function renderPendingPanel() {
+  const countEl = document.getElementById('pending-count');
+  const listEl = document.getElementById('pending-list');
+  if (!countEl || !listEl) return;
+  const items = pendingEntries();
+  countEl.textContent = String(items.length);
+  countEl.classList.toggle('is-empty', items.length === 0);
+  listEl.innerHTML = '';
+  if (items.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'pending-empty';
+    empty.textContent = 'Inga väntande ansökningar.';
+    listEl.appendChild(empty);
+    return;
+  }
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'pending-item';
+    const title = document.createElement('div');
+    title.className = 'pending-item-title';
+    title.textContent = item.name;
+    const meta = document.createElement('div');
+    meta.className = 'pending-item-meta';
+    meta.textContent = 'Vecka ' + item.week + ', ' + weekdayName(item.day) + ' — ' + getLeaveTypeName(item.category);
+    const actions = document.createElement('div');
+    actions.className = 'pending-item-actions';
+    const approve = document.createElement('button');
+    approve.type = 'button';
+    approve.className = 'ds-btn ds-btn-primary';
+    approve.textContent = 'Godkänn';
+    approve.addEventListener('click', () => approveRequest(item.id, item.employeeId, item.week, item.day, item.category));
+    const reject = document.createElement('button');
+    reject.type = 'button';
+    reject.className = 'ds-btn ds-btn-danger';
+    reject.textContent = 'Neka';
+    reject.addEventListener('click', () => rejectRequest(item.id, item.employeeId, item.week, item.day, item.category));
+    actions.appendChild(approve);
+    actions.appendChild(reject);
+    card.appendChild(title);
+    card.appendChild(meta);
+    card.appendChild(actions);
+    listEl.appendChild(card);
+  });
+}
+
 function renderGrid() {
+  const keepLeft = vacationGrid.scrollLeft;
+  const keepTop = vacationGrid.scrollTop;
   vacationGrid.innerHTML = '';
 
   document.getElementById('week-nav-container').innerHTML = '';
+  renderPendingPanel();
 
   if (!vacationPeriod || employees.length === 0) {
     const msg = !currentGroupId
@@ -745,23 +857,7 @@ function renderGrid() {
   const startW = vacationPeriod.start_week;
   const endW = vacationPeriod.end_week;
   const totalWeeks = endW - startW + 1;
-
-  if (viewStart === null) viewStart = startW;
-  if (viewStart < startW) viewStart = startW;
-
-  const allWeeks = [];
-  for (let w = startW; w <= endW; w++) allWeeks.push(w);
-
-  let weeks;
-  if (viewSpan === null) {
-    weeks = allWeeks;
-  } else {
-    if (viewStart + viewSpan - 1 > endW) viewStart = endW - viewSpan + 1;
-    if (viewStart < startW) viewStart = startW;
-    const visEnd = Math.min(viewStart + viewSpan - 1, endW);
-    weeks = [];
-    for (let w = viewStart; w <= visEnd; w++) weeks.push(w);
-  }
+  const weeks = visibleWeeks();
 
   const nav = document.createElement('div');
   nav.className = 'week-nav';
@@ -878,8 +974,19 @@ function renderGrid() {
   table.appendChild(thead);
 
   const tbody = document.createElement('tbody');
+  const shownEmployees = visibleEmployees();
 
-  employees.forEach(emp => {
+  if (shownEmployees.length === 0) {
+    const emptyRow = document.createElement('tr');
+    const emptyCell = document.createElement('td');
+    emptyCell.colSpan = 2 + weeks.length * 7;
+    emptyCell.className = 'col-name';
+    emptyCell.textContent = 'Inga anställda matchar sökningen.';
+    emptyRow.appendChild(emptyCell);
+    tbody.appendChild(emptyRow);
+  }
+
+  shownEmployees.forEach(emp => {
     const row = document.createElement('tr');
 
     const nameCell = document.createElement('td');
@@ -936,7 +1043,9 @@ function renderGrid() {
           td.title = (td.title ? td.title + ' — ' : '') + 'Jour';
         }
 
-        markRedDayCell(td, dayColumnInfo(currentYear, w, d));
+        const dayInfo = dayColumnInfo(currentYear, w, d);
+        markRedDayCell(td, dayInfo);
+        if (isCalendarToday(dayInfo.date)) td.classList.add('is-today');
 
         const noteKey = emp.id + '_' + w + '_' + d;
         if (cellNotes[noteKey]) {
@@ -1024,7 +1133,7 @@ function renderGrid() {
     for (let d = 1; d <= 7; d++) {
       const td = document.createElement('td');
       let count = 0;
-      employees.forEach(emp => {
+      shownEmployees.forEach(emp => {
         if (assignments[emp.id + '_' + w + '_' + d]) count++;
       });
       td.textContent = count || '';
@@ -1044,15 +1153,38 @@ function renderGrid() {
 
   table.appendChild(tbody);
   vacationGrid.appendChild(table);
+  if (!didScrollToToday && vacationGrid.querySelector('td.day-cell.is-today')) {
+    didScrollToToday = true;
+    requestAnimationFrame(scrollGridToToday);
+  } else {
+    vacationGrid.scrollLeft = keepLeft;
+    vacationGrid.scrollTop = keepTop;
+  }
 }
 
 // Events
+document.getElementById('employee-search').addEventListener('input', (e) => {
+  nameQuery = e.target.value;
+  renderGrid();
+});
+
+const pendingOverlay = document.getElementById('pending-overlay');
+document.getElementById('pending-btn').addEventListener('click', () => {
+  renderPendingPanel();
+  pendingOverlay.classList.remove('hidden');
+});
+document.getElementById('close-pending').addEventListener('click', () => pendingOverlay.classList.add('hidden'));
+pendingOverlay.addEventListener('click', (e) => {
+  if (e.target === pendingOverlay) pendingOverlay.classList.add('hidden');
+});
+
 savePeriodBtn.addEventListener('click', savePeriod);
 addEmployeeBtn.addEventListener('click', addEmployee);
 employeeNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addEmployee(); });
 
 yearSelect.addEventListener('change', async () => {
   currentYear = parseInt(yearSelect.value);
+  didScrollToToday = false;
   await loadVacationPeriod();
   await loadAssignments();
   renderGrid();
@@ -1139,8 +1271,54 @@ function exportToExcel() {
   XLSX.writeFile(wb, `Semesterplanering_${groupName}_${currentYear}.xlsx`);
 }
 
+function csvCell(value) {
+  const text = String(value ?? '');
+  if (/[;"\n\r]/.test(text)) return '"' + text.replace(/"/g, '""') + '"';
+  return text;
+}
+
+function exportVisibleCsv() {
+  if (!vacationPeriod || employees.length === 0) return;
+  const weeks = visibleWeeks();
+  const people = visibleEmployees();
+  const header = ['Anställd'];
+  weeks.forEach(w => {
+    for (let d = 1; d <= 7; d++) {
+      const info = dayColumnInfo(currentYear, w, d);
+      header.push('V' + w + ' ' + DAY_NAMES[d - 1] + ' ' + info.day + '/' + (info.date.getUTCMonth() + 1));
+    }
+  });
+  header.push('Dagar');
+  const lines = [header.map(csvCell).join(';')];
+  people.forEach(emp => {
+    const row = [emp.name];
+    let total = 0;
+    weeks.forEach(w => {
+      for (let d = 1; d <= 7; d++) {
+        const a = assignments[emp.id + '_' + w + '_' + d];
+        if (a) {
+          row.push(getLeaveTypeName(a.category));
+          total++;
+        } else {
+          row.push('');
+        }
+      }
+    });
+    row.push(total);
+    lines.push(row.map(csvCell).join(';'));
+  });
+  const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const link = document.createElement('a');
+  const groupName = groups.find(g => g.id === currentGroupId)?.name || 'Schema';
+  link.href = URL.createObjectURL(blob);
+  link.download = `Semesterplanering_${groupName}_${currentYear}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
 const exportMenu = document.getElementById('export-menu');
 const exportExcelBtn = document.getElementById('export-excel');
+const exportCsvBtn = document.getElementById('export-csv');
 const exportPdfBtn = document.getElementById('export-pdf');
 
 exportBtn.addEventListener('click', (e) => {
@@ -1154,11 +1332,19 @@ exportExcelBtn.addEventListener('click', () => {
   exportToExcel();
 });
 
+exportCsvBtn.addEventListener('click', () => {
+  exportMenu.classList.remove('open');
+  exportVisibleCsv();
+});
+
 exportPdfBtn.addEventListener('click', () => {
   exportMenu.classList.remove('open');
   const groupName = groups.find(g => g.id === currentGroupId)?.name || '';
   const subtitle = document.getElementById('print-subtitle');
-  subtitle.textContent = groupName + ' — V' + vacationPeriod.start_week + '–V' + vacationPeriod.end_week + ' ' + currentYear;
+  const weeksNow = visibleWeeks();
+  const fromW = weeksNow[0] || vacationPeriod.start_week;
+  const toW = weeksNow[weeksNow.length - 1] || vacationPeriod.end_week;
+  subtitle.textContent = groupName + ' — V' + fromW + '–V' + toW + ' ' + currentYear;
 
   const legend = document.getElementById('print-legend');
   legend.innerHTML = '';
@@ -1172,7 +1358,7 @@ exportPdfBtn.addEventListener('click', () => {
   });
   const redItem = document.createElement('span');
   redItem.className = 'print-legend-item';
-  redItem.innerHTML = '<span class="print-legend-dot" style="background:#f6d4d4;border-color:#dc2626;"></span>Röd dag';
+  redItem.innerHTML = '<span class="print-legend-dot" style="background:#FCE4DF;border-color:#C45C55;"></span>Röd dag';
   legend.appendChild(redItem);
 
   document.getElementById('print-date').textContent = 'Utskriven ' + new Date().toLocaleDateString('sv-SE');
